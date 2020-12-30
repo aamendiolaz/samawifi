@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="sale_stock_report_invoice_document_import_inherit" inherit_id="sale_stock.sale_stock_report_invoice_document">
+        <xpath expr="/t/t/div/div[2]/t[2]/table/thead/tr/th[3]" position="after">
+            <th>
+                <span>Import Document</span>
+            </th>
+        </xpath>
+        <xpath expr="/t/t/div/div[2]/t[2]/table/tbody/t/tr/td[3]" position="after">
+            <td class="text-center">
+                <t t-esc="snln_line['import_document']"/>
+            </td>
+        </xpath>
+    </template>
+</odoo>

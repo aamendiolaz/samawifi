@@ -12,14 +12,57 @@
                     <div t-field="o.partner_shipping_id" t-options="{&quot;widget&quot;: &quot;contact&quot;, &quot;fields&quot;: [&quot;address&quot;, &quot;name&quot;, &quot;phone&quot;], &quot;no_marker&quot;: True, &quot;phone_icons&quot;: True}" name="purchase_shipping_address"/>
                 </t>
             </t>
-            <p>Plazo de pago: <span t-field="o.payment_term_id"/></p>
-            <div class="address">
-                <div t-field="o.dna"/>
-                <div t-field="o.final_user_id"/>
-            </div>
         </xpath>
         <xpath expr="/t/t/t[2]/div" position="before">
             <strong>VENDOR</strong>
+        </xpath>
+        <xpath expr="//table/thead/tr/th[@name='th_expected_date']" position="replace"/>
+        <xpath expr="//table/tbody/t/tr/t/td[2]" position="replace"/>
+        <xpath expr="/t/t/div/div[1]" position="after">
+            <div class="row">
+                <div class="col-3">
+                    <span>
+                        <strong>Payment Term:</strong>
+                        <br/>
+                    </span>
+                    <span t-field="o.payment_term_id"/>
+                </div>
+                <div class="col-3"/>
+                <div class="col-3"/>
+                <div class="col-3"/>
+            </div>
+        </xpath>
+        <xpath expr="/t/t/div/div[2]" position="after">
+            <div class="row">
+                <div class="col-3">
+                    <span>
+                        <strong>Deal:</strong>
+                        <br/>
+                    </span>
+                    <span t-field="o.dna"/>
+                </div>
+                <div class="col-3"/>
+                <div class="col-3"/>
+                <div class="col-3"/>
+            </div>
+        </xpath>
+        <xpath expr="/t/t/div/div[2]/div[4]" position="inside">
+            <span>
+                <strong>Final User:</strong>
+                <br/>
+            </span>
+        </xpath>
+        <xpath expr="/t/t/div/div[2]/div[4]" position="inside">
+            <span t-field="o.final_user_id"/>
+        </xpath>
+        <xpath expr="/t/t/div/div[3]/div[4]" position="inside">
+            <span>
+                <strong>Channel:</strong>
+                <br/>
+            </span>
+        </xpath>
+        <xpath expr="/t/t/div/div[3]/div[4]" position="inside">
+            <span t-field="o.channel"/>
         </xpath>
     </template>
     <!-- EXTERNAL LAYOUT STANDARD PURCHASE -->

@@ -14,11 +14,6 @@
                     <div t-field="o.partner_shipping_id" t-options="{&quot;widget&quot;: &quot;contact&quot;, &quot;fields&quot;: [&quot;address&quot;, &quot;name&quot;, &quot;phone&quot;], &quot;no_marker&quot;: True, &quot;phone_icons&quot;: True}" name="purchase_shipping_address"/>
                 </t>
             </t>
-            <p>Plazo de pago: <span t-field="o.payment_term_id"/></p>
-            <div class="address">
-                <div t-field="o.dna"/>
-                <div t-field="o.final_user_id"/>
-            </div>
         </xpath>
         <xpath expr="/t/t/t[2]/div" position="before">
             <strong>VENDOR</strong>
@@ -38,6 +33,51 @@
             <td class="text-right">
                 <span t-field="line.discount"/>
             </td>
+        </xpath>
+        <xpath expr="//table/tbody/t/tr/t/td[@name='td_taxes']" position="replace"/>
+        <xpath expr="//table/tbody/t/tr/t/td[2]" position="replace"/>
+        <xpath expr="//table/thead/tr/th[@name='th_taxes']" position="replace"/>
+        <xpath expr="//table/thead/tr/th[@name='th_date_req']" position="replace"/>
+        <xpath expr="/t/t/div/div[1]" position="after">
+            <div class="row">
+                <div class="col-3">
+                    <span>
+                        <strong>Payment Term:</strong>
+                        <br/>
+                    </span>
+                    <span t-field="o.payment_term_id"/>
+                </div>
+                <div class="col-3"/>
+                <div class="col-3"/>
+                <div class="col-3"/>
+            </div>
+        </xpath>
+        <xpath expr="/t/t/div/div[2]" position="after">
+            <div class="row address">
+                <div class="col-5">
+                    <strong>Channel:</strong>
+                    <div t-field="o.channel" t-options-widget="'contact'"/>
+                </div>
+                <div class="col-5 offset-2"/>
+            </div>
+        </xpath>
+        <xpath expr="/t/t/div/div[3]/div[2]" position="inside">
+            <strong>Final user:</strong>
+            <div t-field="o.final_user_id" t-options-widget="'contact'"/>
+        </xpath>
+        <xpath expr="/t/t/div/div[3]" position="after">
+            <div class="row">
+                <div class="col-3">
+                    <span>
+                        <strong>Deal:</strong>
+                        <br/>
+                    </span>
+                    <span t-field="o.dna"/>
+                </div>
+                <div class="col-3"/>
+                <div class="col-3"/>
+                <div class="col-3"/>
+            </div>
         </xpath>
     </template>
 </odoo>

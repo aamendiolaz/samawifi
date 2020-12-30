@@ -6,8 +6,9 @@
         <field name="inherit_id" ref="crm.crm_lead_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//form[1]/sheet[1]/notebook[1]/page[@name='lead']/group[1]/group[2]/field[@name='function']" position="after">
-                <field name="dna"/>
+                <field name="dna" string="Deal"/>
                 <field name="final_user_id"/>
+                <field name="channel" string="Canal"/>
             </xpath>
         </field>
     </record>

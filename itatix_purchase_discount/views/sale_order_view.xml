@@ -12,8 +12,9 @@
                 <field name="vendor_discount" string="Proveedor Desc%" readonly="1" force_save="1"/>
             </xpath>
             <xpath expr="//field[@name='fiscal_position_id']" position="after">
-                <field name="dna"/>
+                <field name="dna" string="Deal"/>
                 <field name="final_user_id" domain="[('final_user_rank','!=', False)]"/>
+                <field name="channel"/>
             </xpath>
         </field>
     </record>

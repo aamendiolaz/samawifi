@@ -7,6 +7,7 @@ class SaleOrder(models.Model):
 
     dna = fields.Char(copy=False)
     final_user_id = fields.Many2one('res.partner', copy=False)
+    channel = fields.Many2one('res.partner', copy=False)
 
     @api.depends('order_line.purchase_line_ids.order_id')
     def _compute_purchase_order_count(self):

@@ -15,6 +15,7 @@ class PurchaseOrder(models.Model):
 
     dna = fields.Char(copy=False)
     final_user_id = fields.Many2one('res.partner', copy=False)
+    channel = fields.Many2one('res.partner', copy=False)
 
     def _add_supplier_to_product(self):
         self.ensure_one()
@@ -42,6 +43,7 @@ class PurchaseOrderLine(models.Model):
                 po.partner_shipping_id = sale_id.partner_shipping_id.id or False
                 po.dna = sale_id.dna or False
                 po.final_user_id = sale_id.final_user_id or False
+                po.channel = sale_id.channel or False
 
         return result
 
@@ -129,7 +131,7 @@ class PurchaseOrderLine(models.Model):
         self.price_list = seller.price_list
         self.price_unit = self._get_discounted_price_unit() if seller.price_list else self.price_unit
 
-    def _prepare_account_move_line(self, move):
-        vals = super(PurchaseOrderLine, self)._prepare_account_move_line(move)
-        vals["discount"] = self.discount
-        return vals
+    def _prepare_account_move_line(self, move=False):
+        res = super(PurchaseOrderLine, self)._prepare_account_move_line(move)
+        res.update({'discount':self.discount})
+        return res

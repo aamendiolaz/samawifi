@@ -44,8 +44,9 @@
                 <field name="discount" />
             </xpath>
             <xpath expr="//field[@name='fiscal_position_id']" position="after">
-                <field name="dna"/>
-                <field name="final_user_id"/>
+                <field name="dna" string="Deal"/>
+                <field name="final_user_id" domain="[('final_user_rank','!=', False)]"/>
+                <field name="channel" string="Canal"/>
             </xpath>
         </field>
     </record>

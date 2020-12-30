@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Stock Production Lot -->
+    <record id="view_production_lot_tree_import_document" model="ir.ui.view">
+        <field name="name">stock.production.lot.tree_import_document</field>
+        <field name="model">stock.production.lot</field>
+        <field name="inherit_id" ref="stock.view_production_lot_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="/tree/field[@name='product_id']" position="after">
+                <field name="import_document" string="Pedimento"/>
+            </xpath>
+        </field>
+    </record>
+    <!-- Inherit Form View to Modify it -->
+    <record id="view_production_lot_form_import_document" model="ir.ui.view">
+        <field name="name">stock.production.lot.form_import_document</field>
+        <field name="model">stock.production.lot</field>
+        <field name="inherit_id" ref="stock.view_production_lot_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_id']" position="after">
+                <field name="import_document" string="Pedimento"/>
+            </xpath>
+
+        </field>
+    </record>
+    <!-- Picking views -->
+    <record id="stock_view_picking_form_import_document" model="ir.ui.view">
+        <field name="name">stock.picking.form_import_document</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='origin']" position="after">
+                <field name="import_document" string="Pedimento"/>
+                <field name="stock_move_line_count" invisible="1"/>
+            </xpath>
+            <xpath expr="//button[@name='action_view_stock_valuation_layers']" position="after">
+                <button class="oe_stat_button" name="action_view_stock_move_lines" type="object" icon="fa-sitemap" attrs="{'invisible': [('stock_move_line_count', '=', 0)]}">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value"><field name="stock_move_line_count"/></span>
+                        <span class="o_stat_text">SN</span>
+                    </div>
+                </button>
+            </xpath>
+            <!-- New definition on move_packages -->
+            <xpath expr="//field[@name='move_line_ids_without_package']" position="inside">
+                <form string="Move Lines" create="0" edit="0">
+                    <header>
+                        <field name="state" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <field name="company_id" invisible="1"/>
+                        <field name="picking_id" invisible="1"/>
+                        <field name="product_uom_category_id" invisible="1"/>
+                        <group>
+                            <group>
+                                <field name="date"/>
+                                <field name="reference" string="Reference"/>
+                                <field name="origin"/>
+                                <field name="product_id"/>
+                                <field name="location_id" options="{'no_create': True}" groups="stock.group_stock_multi_locations"/>
+                                <field name="location_dest_id" options="{'no_create': True}" groups="stock.group_stock_multi_locations"/>
+                            </group>
+                            <group>
+                                <label for="product_uom_qty" string="Quantity Reserved" attrs="{'invisible': [('state', '=', 'done')]}"/>
+                                <div class="o_row" attrs="{'invisible': [('state', '=', 'done')]}">
+                                    <field name="product_uom_qty" readonly="1"/>
+                                    <field name="product_uom_id" options="{'no_create': True}" string="Unit of Measure" groups="uom.group_uom"/>
+                                </div>
+                                <label for="qty_done" string="Quantity Done"/>
+                                <div class="o_row">
+                                    <field name="qty_done"/>
+                                    <field name="product_uom_id" options="{'no_create': True}" string="Unit of Measure" groups="uom.group_uom"/>
+                                </div>
+                                <field name="lot_id" groups="stock.group_production_lot" context="{'default_product_id': product_id, 'active_picking_id': picking_id, 'default_company_id': company_id}" attrs="{'invisible': [('lot_id', '=', False),('lot_name', '!=', False)]}"/>
+                                <field name="lot_name" groups="stock.group_production_lot" attrs="{'invisible': ['|',('lot_id', '!=', False),('lot_name', '=', False)]}"/>
+                                <field name="import_document" string="Pedimento"/>
+                                <field name="package_id" string="Source Package" groups="product.group_stock_packaging"/>
+                                <field name="result_package_id" string="Destination Package" groups="stock.group_tracking_lot"/>
+                                <field name="owner_id" string="Owner" groups="stock.group_tracking_owner"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+                <tree editable="bottom" decoration-muted="(state == 'done' and is_locked == True)" decoration-danger="qty_done&gt;product_uom_qty and state!='done' and parent.picking_type_code != 'incoming'" decoration-success="qty_done==product_uom_qty and state!='done' and not result_package_id">
+                    <field name="product_id" required="1" context="{'default_type': 'product'}" attrs="{'readonly': ['|', ('state', '=', 'done'), ('move_id', '!=', False)]}"/>
+                    <field name="company_id" invisible="1"/>
+                    <field name="move_id" invisible="1"/>
+                    <field name="picking_id" invisible="1"/>
+                    <field name="product_uom_category_id" invisible="1"/>
+                    <field name="location_id" options="{'no_create': True}" attrs="{'column_invisible': [('parent.picking_type_code', '=', 'incoming')]}" groups="stock.group_stock_multi_locations" domain="[('id', 'child_of', parent.location_id), '|', ('company_id', '=', False), ('company_id', '=', company_id)]"/>
+                    <field name="location_dest_id" options="{'no_create': True}" attrs="{'column_invisible': [('parent.picking_type_code', '=', 'outgoing')]}" groups="stock.group_stock_multi_locations" domain="[('id', 'child_of', parent.location_dest_id), '|', ('company_id', '=', False), ('company_id', '=', company_id)]"/>
+                    <field name="package_id" groups="stock.group_tracking_lot"/>
+                    <field name="result_package_id" groups="stock.group_tracking_lot"/>
+                    <field name="lots_visible" invisible="1"/>
+                    <field name="owner_id" groups="stock.group_tracking_owner" attrs="{'column_invisible': [('parent.picking_type_code', '=', 'incoming')]}"/>
+                    <field name="state" invisible="1"/>
+                    <field name="lot_id" groups="stock.group_production_lot" attrs="{'column_invisible': [('parent.show_lots_text', '=', True)], 'invisible': [('lots_visible', '=', False)]}" context="{'default_product_id': product_id, 'default_company_id': company_id, 'active_picking_id': picking_id}" optional="show"/>
+                    <field name="lot_name" groups="stock.group_production_lot" attrs="{'column_invisible': [('parent.show_lots_text', '=', False)], 'invisible': [('lots_visible', '=', False)]}" context="{'default_product_id': product_id}"/>
+                    <field name="is_initial_demand_editable" invisible="1"/>
+                    <field name="product_uom_qty" readonly="1" attrs="{'column_invisible': ['|',('parent.immediate_transfer', '=', True),('parent.picking_type_code','=','incoming')]}" optional="show"/>
+                    <field name="is_locked" invisible="1"/>
+                    <field name="qty_done" attrs="{'readonly': [('state', 'in', ('done', 'cancel')), ('is_locked', '=', True)]}" force_save="1"/>
+                    <field name="product_uom_id" force_save="1" attrs="{'readonly': [('state', '!=', 'draft')]}" groups="uom.group_uom"/>
+                </tree>
+            </xpath>
+            <xpath expr="//field[@name='move_line_ids_without_package']/tree//field[@name='lot_id']" position="after">
+                <field name="import_document" string="Pedimento"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="vpicktree_import_document_inherit" model="ir.ui.view">
+        <field name="name">stock.picking.tree_import_document</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.vpicktree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='origin']" position="after">
+                <field name="import_document" string="Pedimento"/>
+            </xpath>
+
+        </field>
+    </record>
+    <!-- Stock Move Lines -->
+    <record id="view_move_line_form_import_document" model="ir.ui.view">
+        <field name="name">stock.move.line_form_import_document</field>
+        <field name="model">stock.move.line</field>
+        <field name="inherit_id" ref="stock.view_move_line_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='lot_name']" position="after">
+                <field name="import_document" string="Pedimento"/>
+            </xpath>
+
+        </field>
+    </record>
+    <record id="view_stock_move_line_operation_custom_tree" model="ir.ui.view">
+        <field name="name">stock.move.line.operations.tree</field>
+        <field name="model">stock.move.line</field>
+        <field name="priority">1000</field>
+        <field name="arch" type="xml">
+            <tree editable="bottom" decoration-muted="state == 'done' and is_locked == True" decoration-success="product_uom_qty==qty_done" decoration-danger="qty_done &gt; product_uom_qty and state != 'done' and picking_code != 'incoming'">
+                <field name="company_id" invisible="1" force_save="1"/>
+                <field name="picking_id" invisible="1" force_save="1"/>
+                <field name="move_id" invisible="1" force_save="1" />
+                <field name="product_uom_category_id" invisible="1"/>
+                <field name="product_id" invisible="0"/>
+                <field name="package_level_id" invisible="1"/>
+                <field name="location_id" options="{'no_create': True}" attrs="{'readonly': ['&amp;', ('package_level_id', '!=', False), ('parent.picking_type_entire_packs', '=', True)]}" invisible="not context.get('show_source_location')" domain="[('id', 'child_of', parent.location_id), '|', ('company_id', '=', False), ('company_id', '=', company_id)]" groups="stock.group_stock_multi_locations"/>
+                <field name="location_dest_id" width="0.75" attrs="{'readonly': ['&amp;', ('package_level_id', '!=', False), ('parent.picking_type_entire_packs', '=', True)]}" invisible="not context.get('show_destination_location')" domain="[('id', 'child_of', parent.location_dest_id), '|', ('company_id', '=', False), ('company_id', '=', company_id)]" groups="stock.group_stock_multi_locations"/>
+                <field name="lot_id" invisible="1"
+                       context="{
+                            'active_picking_id': picking_id,
+                            'default_company_id': company_id,
+                            'default_product_id': product_id,
+                        }"
+                />
+                <field name="lot_name" widget="text"/>
+                <field name="import_document" string="Pedimento"/>
+                <field name="package_id" attrs="{'readonly': ['&amp;', ('package_level_id', '!=', False), ('parent.picking_type_entire_packs', '=', True)]}" invisible="not context.get('show_package')" groups="stock.group_tracking_lot"/>
+                <field name="result_package_id" attrs="{'readonly': ['&amp;', ('package_level_id', '!=', False), ('parent.picking_type_entire_packs', '=', True)]}" groups="stock.group_tracking_lot"/>
+                <field name="owner_id" attrs="{'readonly': ['&amp;', ('package_level_id', '!=', False), ('parent.picking_type_entire_packs', '=', True)]}" invisible="not context.get('show_owner')" groups="stock.group_tracking_owner"/>
+                <field name="product_uom_qty" invisible="not context.get('show_reserved_quantity')" readonly="1"/>
+                <field name="state" invisible="1"/>
+                <field name="is_locked" invisible="1"/>
+                <field name="picking_code" invisible="1"/>
+                <field name="qty_done" invisible="1" attrs="{'readonly': ['|', '&amp;', ('state', '=', 'done'), ('is_locked', '=', True), '&amp;', ('package_level_id', '!=', False), ('parent.picking_type_entire_packs', '=', True)]}"/>
+                <field name="product_uom_id" options="{'no_open': True, 'no_create': True}" attrs="{'readonly': ['|', ('product_uom_qty', '!=', 0.0), '&amp;', ('package_level_id', '!=', False), ('parent.picking_type_entire_packs', '=', True)]}" string="Unit of Measure" groups="uom.group_uom"/>
+            </tree>
+        </field>
+    </record>
+    <record id="view_stock_quant_tree_import_document" model="ir.ui.view">
+        <field name="name">stock.quant.tree.import_document</field>
+        <field name="model">stock.quant</field>
+        <field name="inherit_id" ref="stock.view_stock_quant_tree_editable"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='lot_id']" position="after">
+                <field name="import_document" string="Pedimento"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="quant_search_view_inherit_import_document" model="ir.ui.view">
+        <field name="name">stock.quant.search.import_document</field>
+        <field name="model">stock.quant</field>
+        <field name="inherit_id" ref="stock.quant_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='Lot_Serial_number']" position="after">
+                <filter string="Pedimento" name="import_document"
+                        context="{'group_by': 'import_document'}"
+                />
+            </xpath>
+        </field>
+    </record>
+    <record id="view_picking_internal_import_document_search" model="ir.ui.view">
+       <field name="name">stock.picking.search.import_document</field>
+       <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_internal_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='origin']" position="after">
+                <filter string="Pedimento" name="import_document"
+                        context="{'group_by': 'import_document'}"/>
+            </xpath>
+       </field>
+    </record>
+
+</odoo>
