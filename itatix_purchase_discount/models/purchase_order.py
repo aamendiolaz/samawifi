@@ -133,5 +133,10 @@ class PurchaseOrderLine(models.Model):
 
     def _prepare_account_move_line(self, move=False):
         res = super(PurchaseOrderLine, self)._prepare_account_move_line(move)
-        res.update({'discount':self.discount})
+        res.update(
+            {
+                'discount':self.discount,
+                'price_unit': self.price_list
+            }
+        )
         return res

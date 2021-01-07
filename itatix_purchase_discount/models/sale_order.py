@@ -78,3 +78,11 @@ class SaleOrderLine(models.Model):
         if not self.price_list and self.product_id:
             self.price_list = self.product_id._select_seller().price_list
             self.vendor_discount = self.product_id._select_seller().discount
+
+    def _prepare_invoice_line(self, **optional_values):
+        res = super(SaleOrderLine, self)._prepare_invoice_line(**optional_values)
+        if self.vendor_discount:
+            res['vendor_discount'] = self.vendor_discount
+        if self.price_unit and self.price_list:
+            res['price_unit'] = self.price_list
+        return res
