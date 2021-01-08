@@ -1,5 +1,7 @@
 from odoo import api, fields, models
 from odoo.tools.misc import get_lang
+from odoo.tools.misc import formatLang, get_lang
+from functools import partial
 
 
 class SaleOrder(models.Model):
@@ -26,6 +28,34 @@ class SaleOrder(models.Model):
                     lst.append(
                         [dict_line]
                     )
+        return result
+
+    def _amount_by_group(self):
+        result = super(SaleOrder, self)._amount_by_group()
+        for order in self:
+            if order.order_line.filtered(lambda ln: ln.price_list and ln.discount):
+                currency = order.currency_id or order.company_id.currency_id
+                fmt = partial(formatLang, self.with_context(lang=order.partner_id.lang).env, currency_obj=currency)
+                res = {}
+                for line in order.order_line:
+                    price_unit = line.price_unit if not (line.price_list and line.discount) else line.price_list
+                    price_reduce = price_unit * (1.0 - line.discount / 100.0)
+                    taxes = line.tax_id.compute_all(price_reduce, quantity=line.product_uom_qty, product=line.product_id, partner=order.partner_shipping_id)['taxes']
+                    for tax in line.tax_id:
+                        group = tax.tax_group_id
+                        res.setdefault(group, {'amount': 0.0, 'base': 0.0})
+                        for t in taxes:
+                            if t['id'] == tax.id or t['id'] in tax.children_tax_ids.ids:
+                                res[group]['amount'] += t['amount']
+                                res[group]['base'] += t['base']
+                res = sorted(res.items(), key=lambda l: l[0].sequence)
+                order.amount_by_group = [(
+                    l[0].name, l[1]['amount'], l[1]['base'],
+                    fmt(l[1]['amount']), fmt(l[1]['base']),
+                    len(res),
+                ) for l in res]
+            else:
+                return result
         return result
 
 
