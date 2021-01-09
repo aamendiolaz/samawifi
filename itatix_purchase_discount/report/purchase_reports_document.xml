@@ -28,7 +28,13 @@
                     <span t-field="o.payment_term_id"/>
                 </div>
                 <div class="col-3"/>
-                <div class="col-3"/>
+                <div class="col-3">
+                    <span>
+                        <strong>DEAL:</strong>
+                        <br/>
+                    </span>
+                    <span t-field="o.dna"/>
+                </div>
                 <div class="col-3"/>
             </div>
         </xpath>
