@@ -64,6 +64,19 @@
         <xpath expr="/t/t/div/div[3]/div[4]" position="inside">
             <span t-field="o.channel"/>
         </xpath>
+        <xpath expr="//tbody/t[1]" position="before">
+            <t t-set="counter" t-value="0"/>
+        </xpath>
+        <xpath expr="//thead/tr/th[1]" position="before">
+            <th id="head_counter">
+            </th>
+        </xpath>
+        <xpath expr="//tbody/t/tr/t[1]/td[1]" position="before">
+            <td>
+                <t t-set="counter" t-value="counter + 1"/>
+                <t t-esc="counter"/>
+            </td>
+        </xpath>
     </template>
     <!-- EXTERNAL LAYOUT STANDARD PURCHASE -->
     <template id="external_layout_standard_purchase">
