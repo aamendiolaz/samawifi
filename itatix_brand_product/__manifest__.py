@@ -9,8 +9,12 @@
     'license': 'AGPL-3',
     'depends': ['sale', 'product', 'product_unspsc', 'stock_account', 'stock_enterprise'],
     'data': [
+        'security/res_groups_sama.xml',
+        'security/ir.model.access.csv',
+        'views/sama_views.xml',
         'views/product_template_view.xml',
-        'views/stock_quant_view.xml'
+        'views/stock_quant_view.xml',
+        'report/sale_report_view.xml'
     ],
     'installable': True,
     'auto_install': False

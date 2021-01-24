@@ -8,9 +8,9 @@
             <field name="inherit_id" ref="stock.quant_search_view"/>
             <field name="arch" type="xml">
                 <xpath expr="//filter[@name='productgroup']" position="after">
-                    <filter string="Sama Category" name="sama_category" context="{'group_by': 'sama_category'}"/>
-                    <filter string="Sama subcategory" name="sama_subcategory" context="{'group_by': 'sama_subcategory'}"/>
-                    <filter string="Brand" name="sama_brand" context="{'group_by':'sama_brand'}"/>
+                    <filter string="Sama Category" name="sama_category_id" context="{'group_by': 'sama_category_id'}"/>
+                    <filter string="Sama subcategory" name="sama_subcategory_id" context="{'group_by': 'sama_subcategory_id'}"/>
+                    <filter string="Brand" name="sama_brand_id" context="{'group_by':'sama_brand_id'}"/>
                 </xpath>
             </field>
         </record>
@@ -20,9 +20,9 @@
             <field name="inherit_id" ref="stock_account.view_inventory_valuation_search"/>
             <field name="arch" type="xml">
                 <xpath expr="//filter[@name='group_by_product_id']" position="after">
-                    <filter string="Sama Category" name="sama_category" context="{'group_by': 'sama_category'}"/>
-                    <filter string="Sama subcategory" name="sama_subcategory" context="{'group_by': 'sama_subcategory'}"/>
-                    <filter string="Brand" name="sama_brand" context="{'group_by':'sama_brand'}"/>
+                    <filter string="Sama Category" name="sama_category_id" context="{'group_by': 'sama_category_id'}"/>
+                    <filter string="Sama subcategory" name="sama_subcategory_id" context="{'group_by': 'sama_subcategory_id'}"/>
+                    <filter string="Brand" name="sama_brand_id" context="{'group_by':'sama_brand_id'}"/>
                 </xpath>
 
             </field>

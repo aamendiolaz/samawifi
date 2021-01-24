@@ -4,14 +4,14 @@ from odoo import fields, models
 class StockQuant(models.Model):
     _inherit = 'stock.quant'
 
-    sama_category = fields.Char(related='product_id.sama_category', store=True)
-    sama_subcategory = fields.Char(related='product_id.sama_subcategory', store=True)
-    sama_brand = fields.Char(related='product_id.sama_brand', store=True)
+    sama_category_id = fields.Many2one(related='product_id.sama_category_id', store=True)
+    sama_subcategory_id = fields.Many2one(related='product_id.sama_subcategory_id', store=True)
+    sama_brand_id = fields.Many2one(related='product_id.sama_brand_id', store=True)
 
 
 class StockValuationLayer(models.Model):
     _inherit = 'stock.valuation.layer'
 
-    sama_category = fields.Char(related='product_id.sama_category', store=True)
-    sama_subcategory = fields.Char(related='product_id.sama_subcategory', store=True)
-    sama_brand = fields.Char(related='product_id.sama_brand', store=True)
+    sama_category_id = fields.Many2one(related='product_id.sama_category_id', store=True)
+    sama_subcategory_id = fields.Many2one(related='product_id.sama_subcategory_id', store=True)
+    sama_brand_id = fields.Many2one(related='product_id.sama_brand_id', store=True)
