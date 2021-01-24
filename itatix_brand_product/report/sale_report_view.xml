@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_order_sama_search_inherit" model="ir.ui.view">
+            <field name="name">view.order.sama.search.inherit</field>
+            <field name="model">sale.report</field>
+            <field name="inherit_id" ref="sale.view_order_product_search"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='company_id']" position="after">
+                    <field name="sama_brand_id"/>
+                    <field name="sama_category_id"/>
+                    <field name="sama_subcategory_id"/>
+                </xpath>
+                <xpath expr="//filter[@name='Customer']" position="after">
+                    <filter string="Brand" name="sama_brand_id" context="{'group_by': 'sama_brand_id'}"/>
+                    <filter string="Sama Category" name="sama_category_id" context="{'group_by': 'sama_category_id'}"/>
+                    <filter string="Sama Subcategory" name="sama_subcategory_id" context="{'group_by': 'sama_subcategory_id'}"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

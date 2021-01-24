@@ -6,15 +6,15 @@ from odoo import fields, models
 
 class SaleReport(models.Model):
     _inherit = "sale.report"
-    sama_category = fields.Char(readonly=True)
-    sama_subcategory = fields.Char(readonly=True)
-    sama_brand = fields.Char(readonly=True, string="Brand")
+    sama_category_id = fields.Many2one('sama.category', readonly=True)
+    sama_subcategory_id = fields.Many2one('sama.subcategory', readonly=True)
+    sama_brand_id = fields.Many2one('sama.brand', readonly=True, string="Brand")
 
     def _query(self, with_clause='', fields={}, groupby='', from_clause=''):
-        fields['sama_category'] = ', t.sama_category as sama_category'
-        fields['sama_subcategory'] = ', t.sama_subcategory as sama_subcategory'
-        fields['sama_brand'] = ', t.sama_brand as sama_brand'
+        fields['sama_category_id'] = ', t.sama_category_id as sama_category_id'
+        fields['sama_subcategory_id'] = ', t.sama_subcategory_id as sama_subcategory_id'
+        fields['sama_brand_id'] = ', t.sama_brand_id as sama_brand_id'
 
-        groupby += ', t.sama_category , t.sama_subcategory, t.sama_brand'
+        groupby += ', t.sama_category_id , t.sama_subcategory_id, t.sama_brand_id'
 
         return super(SaleReport, self)._query(with_clause, fields, groupby, from_clause)
