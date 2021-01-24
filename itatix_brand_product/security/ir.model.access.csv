@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sama_category,sama.category,model_sama_category,itatix_brand_product.group_sama_category,1,1,1,1
+access_sama_subcategory,sama.subcategory,model_sama_subcategory,itatix_brand_product.group_sama_category,1,1,1,1
+access_brand,sama.brand,model_sama_brand,itatix_brand_product.group_sama_category,1,1,1,1
+

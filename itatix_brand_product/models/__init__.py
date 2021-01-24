@@ -1,2 +1,3 @@
-from . import product_template
+from . import sama
+from . import product
 from . import stock
