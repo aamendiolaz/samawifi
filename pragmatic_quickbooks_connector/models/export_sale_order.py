@@ -22,7 +22,7 @@ class Sales_Order(models.Model):
         }
         
         if line.tax_id:
-            raise UserError("QBO does not have taxable Sale orders, Taxable sale orders cannot be exported.")
+            raise Warning("QBO does not have taxable Sale orders, Taxable sale orders cannot be exported.")
             taxCodeRefValue = 'TAX'
             # tax = self.env['account.tax'].get_qbo_tax_code(line.tax_id)
         else:
@@ -107,7 +107,7 @@ class Sales_Order(models.Model):
                                                         "value": tax_added.qbo_tax_id
                                                     }}})
                     else:
-                        raise UserError("You need to add same tax for the required orderlines.")
+                        raise Warning("You need to add same tax for the required orderlines.")
 
         # print("VALS ####",vals)
         return vals
@@ -125,12 +125,12 @@ class Sales_Order(models.Model):
             if len(sales) == 1:
                 if sale.quickbook_id:
                     _logger.info("Sale order is already exported to QBO")
-                    raise UserError("Sale order is already exported to QBO")
+                    raise Warning("Sale order is already exported to QBO")
                     # raise ValidationError(_("Sale Order is already exported to QBO. Please, export a different Sale Order."))
             if len(sales) > 1:
                 if sale.quickbook_id:
                     _logger.info("Sale order is already exported to QBO")
-                    raise UserError("Sale order is already exported to QBO")
+                    raise Warning("Sale order is already exported to QBO")
 
             if not sale.quickbook_id:
                 if sale.state in ['done','sale']:

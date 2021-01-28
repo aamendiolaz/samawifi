@@ -116,7 +116,6 @@ class ResPartner(models.Model):
 
     @api.model
     def _prepare_partner_dict(self, partner, is_customer=False, is_vendor=False):
-
         vals = {
             'company_type': 'person' if partner.get('Job') else 'company',
             # 'name': partner.get('DisplayName'),
@@ -151,7 +150,7 @@ class ResPartner(models.Model):
             vals.update(
                 {'name': partner.get('GivenName') + ' ' + partner.get('MiddleName') + ' ' + partner.get('FamilyName')})
 
-        if partner.get('DisplayName'):
+        if not partner.get('GivenName'):
             vals.update({'name': partner.get('DisplayName')})
 
         if partner.get('Title'):
@@ -189,11 +188,11 @@ class ResPartner(models.Model):
             }
             vals.update(address_vals)
 
-        # if 'ParentRef' in partner:
-        #     if is_customer:
-        #         vals.update({'parent_id': self.get_parent_customer_ref(partner.get('ParentRef').get('value'))})
-        #     if is_vendor:
-        #         vals.update({'parent_id': self.get_parent_vendor_ref(partner.get('ParentRef').get('value'))})
+        if 'ParentRef' in partner:
+            if is_customer:
+                vals.update({'parent_id': self.get_parent_customer_ref(partner.get('ParentRef').get('value'))})
+            if is_vendor:
+                vals.update({'parent_id': self.get_parent_vendor_ref(partner.get('ParentRef').get('value'))})
 
         return vals
 
@@ -219,8 +218,6 @@ class ResPartner(models.Model):
                 partners = [res.get('Vendor')] or []
         else:
             partners = []
-        if len(partners) == 0 :
-            raise UserError("It seems that all of the Customers/Vendors are already imported.")
         for partner in partners:
             vals = self._prepare_partner_dict(partner, is_customer=is_customer, is_vendor=is_vendor)
             _logger.info("VALS FOUND OUT IS !!!!!!!!!!!!---> {}".format(vals))

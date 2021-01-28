@@ -41,8 +41,6 @@ class QBOPaymentMethod(models.Model):
             PaymentMethod = res.get('QueryResponse').get('PaymentMethod', [])
         else:
             PaymentMethod = [res.get('PaymentMethod')] or []
-        if len(PaymentMethod) == 0 :
-            raise UserError("It seems that all of the Payment Method are already imported.")
         for method in PaymentMethod:
             vals = {
                 'name': method.get("Name", ''),
@@ -126,73 +124,55 @@ class AccountPayment(models.Model):
     @api.model
     def _prepare_payment_dict(self, payment):
         _logger.info('<--------- Customer Payment ----------> %s', payment)
-        dup_val  = {
-            'amount': payment.get('TotalAmt'),
-            'payment_date': payment.get('TxnDate'),
-            'payment_method_id': 1,
-        }
         vals = {
+            'amount': payment.get('TotalAmt'),
+            'date': payment.get('TxnDate'),
             'qbo_payment_ref': payment.get('PaymentRefNum') if payment.get('PaymentRefNum') else False,
+            'payment_method_id': 1,
         }
         if 'CustomerRef' in payment:
             customer_id = self.env['res.partner'].get_parent_customer_ref(payment.get('CustomerRef').get('value'))
             vals.update({
-                'qbo_payment_id': payment.get("Id"),
-            })
-            dup_val.update({
                 'partner_type': 'customer',
                 'partner_id': customer_id,
+                'qbo_payment_id': payment.get("Id"),
             })
         if 'VendorRef' in payment:
-
             vendor_id = self.env['res.partner'].get_parent_vendor_ref(payment.get('VendorRef').get('value'))
             vals.update({
-                'qbo_bill_payment_id': payment.get("Id"),
-            })
-            dup_val.update({
                 'partner_type': 'supplier',
                 'partner_id': vendor_id,
+                'qbo_bill_payment_id': payment.get("Id"),
             })
 
         # For payment
         if 'DepositToAccountRef' in payment:
-
             journal_id = self.env['account.journal'].get_journal_from_account(payment.get('DepositToAccountRef').get('value'))
-            # vals.update({'journal_id': journal_id})
-            dup_val.update({'journal_id': journal_id})
+            vals.update({'journal_id': journal_id})
 
         # For Bill payment
         if 'APAccountRef' in payment:
-
             journal_id = self.env['account.journal'].get_journal_from_account(
                 payment.get('APAccountRef').get('value'))
-            # vals.update({'journal_id': journal_id})
-            dup_val.update({'journal_id': journal_id})
-
+            vals.update({'journal_id': journal_id})
         elif 'CheckPayment' in payment:
             if 'BankAccountRef' in payment.get('CheckPayment'):
-
                 if 'value' in payment.get('CheckPayment').get('BankAccountRef'):
                     journal_id = self.env['account.journal'].get_journal_from_account(
                         payment.get('CheckPayment').get('BankAccountRef').get('value'))
-                    # vals.update({'journal_id': journal_id})
-                    dup_val.update({'journal_id': journal_id})
-
+                    vals.update({'journal_id': journal_id})
             else:
                 _logger.info('CheckPayment does not contain BankAccountRef')
 
         elif 'CreditCardPayment' in payment:
             if 'CCAccountRef' in payment.get('CreditCardPayment'):
-
                 if 'value' in payment.get('CreditCardPayment').get('CCAccountRef'):
                     journal_id = self.env['account.journal'].get_journal_from_account(
                         payment.get('CreditCardPayment').get('CCAccountRef').get('value'))
-                    # vals.update({'journal_id': journal_id})
-                    dup_val.update({'journal_id': journal_id})
-
+                    vals.update({'journal_id': journal_id})
             else:
                 _logger.info('CreditCardPayment does not contain CCAccountRef')
-        return vals,dup_val
+        return vals
 
     @api.model
     def create_payment(self, data, is_customer=False, is_vendor=False):
@@ -200,8 +180,6 @@ class AccountPayment(models.Model):
         :param data: payment object response return by QBO
         :return account.payment: account payment object
         """
-        company = self.env['res.company'].search([('id', '=', 1)], limit=1)
-
         res = json.loads(str(data.text))
 
         if is_customer:
@@ -219,339 +197,54 @@ class AccountPayment(models.Model):
         payment_obj = False
         count = 0
         for payment in Payments:
-            if payment.get('TotalAmt'):
-                invoice = False
-                payment_obj_rec =False
-                if payment is None:
-                    payment = False
-                # if len(payment.get('Line')) > 0:
-                #     if payment and 'LinkedTxn' in payment.get('Line')[0]:
-                #         txn = payment.get('Line')[0].get('LinkedTxn')
-                #         if txn and (txn[0].get('TxnType') == 'Invoice' or txn[0].get('TxnType') == 'Bill'):
-                #             qbo_inv_ref = txn[0].get('TxnId')
-                #             invoice = self.env['account.move'].search([('qbo_invoice_id', '=', qbo_inv_ref)], limit=1)
-                if len(payment.get('Line')) > 0:
-                    i= 0
-                    payment_obj_rec = self.search([('qbo_bill_payment_id', '=', payment.get("Id"))])
-                    if not payment_obj_rec:
-                        payment_obj_rec = self.search([('qbo_payment_id', '=', payment.get("Id"))])
+            invoice = False
+            if payment is None:
+                payment = False
+            if len(payment.get('Line')) > 0:
+                if payment and 'LinkedTxn' in payment.get('Line')[0]:
+                    txn = payment.get('Line')[0].get('LinkedTxn')
+                    if txn and (txn[0].get('TxnType') == 'Invoice' or txn[0].get('TxnType') == 'Bill'):
+                        qbo_inv_ref = txn[0].get('TxnId')
+                        invoice = self.env['account.move'].search([('qbo_invoice_id', '=', qbo_inv_ref)], limit=1)
+            if not invoice:
+                _logger.info('Vendor Bill/Invoice does not exists for this payment \n%s', payment)
+                continue
+            vals = self._prepare_payment_dict(payment)
+            if vals.get('amount') == 0:
+                _logger.info('<---------Payment Amount is Zero----------> ')
+                continue
+            if invoice.state == 'draft':
+                _logger.info('<---------Invoice is going to open state----------> %s', invoice)
+                if invoice.invoice_line_ids:
+                    invoice.action_post()
+            vals.update({'ref': invoice.name})
+            vals.update({'reconciled_invoice_ids': [(4, invoice.id, None)]})
+            
+            if 'journal_id' not in vals:
+                get_payments = self.env['account.payment'].search([])
+                for pay in get_payments:
+                    if pay.invoice_ids:
+                        for inv in pay.invoice_ids:
+                            if inv.id == invoice.id:
+                                if pay.journal_id:
+                                    vals.update({'journal_id': pay.journal_id.id})
 
-                    if not payment_obj_rec:
+            if invoice.partner_id.customer_rank:
+                vals.update({'payment_type': 'inbound'})
+                payment_obj = self.search([('qbo_payment_id', '=', payment.get("Id"))], limit=1)
+            elif invoice.partner_id.supplier_rank:
+                vals.update({'payment_type': 'outbound'})
+                payment_obj = self.search([('qbo_bill_payment_id', '=', payment.get("Id"))], limit=1)
 
-                        for inv_rec in payment.get('Line'):
-                            i=i+1
-                            invoice=False
+            if not payment_obj:
+                if 'journal_id' not in vals:
+                    raise ValidationError(_('Payment Journal required'))
+                    # create payment
+                payment_obj = self.create(vals)
+                payment_obj.action_post()
 
-
-                            if inv_rec.get('LinkedTxn'):
-                                if inv_rec.get('LinkedTxn') and (inv_rec.get('LinkedTxn')[0].get('TxnType') == 'Invoice' or inv_rec.get('LinkedTxn')[0].get('TxnType') == 'Bill'):
-
-                                    if inv_rec.get('LinkedTxn')[0].get('TxnId'):
-
-                                        invoice = self.env['account.move'].search([('qbo_invoice_id', '=', inv_rec.get('LinkedTxn')[0].get('TxnId'))],
-                                                                                  limit=1)
-
-
-
-                                    if not invoice:
-
-                                        vals, dup_val = self._prepare_payment_dict(payment)
-                                        _logger.info('<------xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx----> ')
-
-                                        if dup_val == 0:
-                                            _logger.info('<---------Payment Amount is Zero----------> ')
-                                            continue
-
-
-                                        if 'journal_id' not in dup_val:
-                                            raise ValidationError(_('Payment Journal required'))
-                                                # create payment
-                                            # payment_obj = self.create(vals)
-                                            # payment_obj.action_post()
-                                        del dup_val['payment_date']
-                                        dup_val.update({'amount': inv_rec.get('Amount')})
-                                        if is_customer:
-                                            dup_val.update({'partner_type': 'customer'})
-                                            dup_val.update({'payment_type': 'inbound'})
-
-                                        elif is_vendor:
-                                            dup_val.update({'payment_type': 'outbound'})
-                                            dup_val.update({'partner_type': 'supplier'})
-
-                                        payment_obj = self.env['account.payment'].create(dup_val)
-                                        payment_obj.action_post()
-
-                                        payment_obj.sudo().write(vals)
-
-                                        payment_obj._cr.commit()
-                                        if payment_obj:
-                                            if is_customer:
-                                                company.sudo().write({'last_imported_payment_id': payment_obj.qbo_payment_id})
-                                                company._cr.commit()
-
-                                            elif is_vendor:
-                                                company.sudo().write({'last_imported_bill_payment_id': payment_obj.qbo_payment_id})
-                                                company._cr.commit()
-
-                                        _logger.info(_("Payment created sucessfully! Payment Id: %s" % (payment_obj.id)))
-
-                                        # _logger.info('Vendor Bill/Invoice does not exists for this payment \n%s', payment)
-                                        # continue
-                                        #
-                                    else:
-                                        # print('\n\\n\n\n\n\n %%%%%%%%%%%%%%%%%%%%%%%%%%%%%.............%%55555555555555 \n\n')
-                                        vals, dup_val = self._prepare_payment_dict(payment)
-                                        if dup_val == 0:
-                                            _logger.info('<---------Payment Amount is Zero----------> ')
-                                            continue
-                                        if invoice.state == 'draft':
-                                            _logger.info('<---------Invoice is going to open state----------> %s', invoice)
-                                            if invoice.invoice_line_ids:
-                                                invoice.action_post()
-                                        dup_val.update({'amount': inv_rec.get('Amount')})
-                                        vals.update({'ref': invoice.name})
-                                        # vals.update({'reconciled_invoice_ids': [(4, invoice.id, None)]})
-
-                                        if 'journal_id' not in dup_val:
-                                            get_payments = self.env['account.payment'].search([])
-                                            for pay in get_payments:
-                                                if pay.invoice_ids:
-                                                    for inv in pay.invoice_ids:
-                                                        if inv.id == invoice.id:
-                                                            if pay.journal_id:
-                                                                dup_val.update({'journal_id': pay.journal_id.id})
-
-                                        if invoice.partner_id.customer_rank:
-                                            dup_val.update({'payment_type': 'inbound'})
-                                        elif invoice.partner_id.supplier_rank:
-                                            dup_val.update({'payment_type': 'outbound'})
-
-
-                                        if 'journal_id' not in dup_val:
-                                            raise ValidationError(_('Payment Journal required'))
-                                            # create payment
-                                        # payment_obj = self.create(vals)
-                                        # payment_obj.action_post()
-
-                                        register_payments = self.env['account.payment.register'].with_context(
-                                            active_model='account.move',
-                                            active_ids=invoice.id).create(dup_val)
-                                        invoice = False
-                                        # print('\n\n------- VALLLLLLls ',vals)
-                                        # print('\n\n------- dupvall  ',dup_val)
-
-                                        payment_obj = register_payments._create_payments()
-                                        payment_obj.sudo().write(vals)
-                                        payment_obj.action_post()
-                                        payment_obj._cr.commit()
-                                        if payment_obj:
-
-                                            if is_customer:
-                                                if payment_obj.qbo_payment_id:
-                                                    company.sudo().write({'last_imported_payment_id': payment_obj.qbo_payment_id})
-                                                    company._cr.commit()
-
-                                            elif is_vendor:
-                                                if payment_obj.qbo_payment_id:
-                                                    company.sudo().write({'last_imported_bill_payment_id': payment_obj.qbo_payment_id})
-                                                    company._cr.commit()
-
-                                        _logger.info(_("Payment created sucessfully! Payment Id: %s" % (payment_obj.id)))
-
-                    else:
-                        continue
-
-
-                if not invoice and not payment_obj:
-                    # print('\n\\n\n\n\n\n=............................. 55555555555 ..............\n\n\n')
-
-                    vals, dup_val = self._prepare_payment_dict(payment)
-                    _logger.info('<------xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx----> ')
-
-                    if dup_val == 0:
-                        _logger.info('<---------Payment Amount is Zero----------> ')
-                        continue
-
-                    payment_obj = self.search([('qbo_bill_payment_id', '=', payment.get("Id"))], limit=1)
-
-                    if not payment_obj:
-                        if 'journal_id' not in dup_val:
-                            raise ValidationError(_('Payment Journal required'))
-                            # create payment
-                        # payment_obj = self.create(vals)
-                        # payment_obj.action_post()
-                    del dup_val['payment_date']
-                    if is_customer:
-                        dup_val.update({'partner_type': 'customer'})
-                        dup_val.update({'payment_type': 'inbound'})
-
-                    elif is_vendor:
-                        dup_val.update({'payment_type': 'outbound'})
-                        dup_val.update({'partner_type': 'supplier'})
-
-                    payment_obj = self.env['account.payment'].create(dup_val)
-                    payment_obj.action_post()
-
-                    payment_obj.sudo().write(vals)
-
-                    payment_obj._cr.commit()
-                    if payment_obj:
-                        if is_customer:
-                            if payment_obj.qbo_payment_id:
-                                if payment_obj.qbo_payment_id:
-                                    company.sudo().write({'last_imported_payment_id': payment_obj.qbo_payment_id})
-                                    company._cr.commit()
-
-                        elif is_vendor:
-                            if payment_obj.qbo_payment_id:
-                                if payment_obj.qbo_payment_id:
-                                    company.sudo().write({'last_imported_bill_payment_id': payment_obj.qbo_payment_id})
-                                    company._cr.commit()
-
-                    _logger.info(_("Payment created sucessfully! Payment Id: %s" % (payment_obj.id)))
+            _logger.info(_("Payment created sucessfully! Payment Id: %s" % (payment_obj.id)))
         return payment_obj
-
-    # @api.model
-    # def create_payment(self, data, is_customer=False, is_vendor=False):
-    #     """Import payment from QBO
-    #     :param data: payment object response return by QBO
-    #     :return account.payment: account payment object
-    #     """
-    #     company = self.env['res.company'].search([('id', '=', 1)], limit=1)
-    #
-    #     res = json.loads(str(data.text))
-    #
-    #
-    #     if is_customer:
-    #         if 'QueryResponse' in res:
-    #             Payments = res.get('QueryResponse').get('Payment', [])
-    #         else:
-    #             Payments = [res.get('Payment')] or []
-    #     elif is_vendor:
-    #
-    #         if 'QueryResponse' in res:
-    #             Payments = res.get('QueryResponse').get('BillPayment', [])
-    #         else:
-    #             Payments = [res.get('BillPayment')] or []
-    #
-    #     payment_obj = False
-    #     count = 0
-    #     for payment in Payments:
-    #         if payment.get('TotalAmt'):
-    #             invoice = False
-    #             if payment is None:
-    #                 payment = False
-    #             if len(payment.get('Line')) > 0:
-    #                 if payment and 'LinkedTxn' in payment.get('Line')[0]:
-    #                     txn = payment.get('Line')[0].get('LinkedTxn')
-    #                     if txn and (txn[0].get('TxnType') == 'Invoice' or txn[0].get('TxnType') == 'Bill'):
-    #                         qbo_inv_ref = txn[0].get('TxnId')
-    #                         invoice = self.env['account.move'].search([('qbo_invoice_id', '=', qbo_inv_ref)], limit=1)
-    #                         print('\n\\n\ninvoiceinvoiceinvoiceinvoice \n',qbo_inv_ref,invoice)
-    #
-    #             if not invoice:
-    #                 print('\n\\n\n\n\n\n=............................. 55555555555 ..............\n\n\n')
-    #
-    #                 vals, dup_val = self._prepare_payment_dict(payment)
-    #                 _logger.info('<------xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx----> ')
-    #
-    #                 if dup_val == 0:
-    #                     _logger.info('<---------Payment Amount is Zero----------> ')
-    #                     continue
-    #
-    #
-    #                 payment_obj = self.search([('qbo_bill_payment_id', '=', payment.get("Id"))], limit=1)
-    #
-    #                 if not payment_obj:
-    #                     if 'journal_id' not in dup_val:
-    #                         raise ValidationError(_('Payment Journal required'))
-    #                         # create payment
-    #                     # payment_obj = self.create(vals)
-    #                     # payment_obj.action_post()
-    #                 del dup_val['payment_date']
-    #                 if is_customer:
-    #                     dup_val.update({'payment_type': 'inbound'})
-    #
-    #                 elif is_vendor:
-    #                     dup_val.update({'payment_type': 'outbound'})
-    #
-    #                 payment_obj = self.env['account.payment'].create(dup_val)
-    #                 payment_obj.action_post()
-    #
-    #                 payment_obj.sudo().write(vals)
-    #
-    #                 payment_obj._cr.commit()
-    #                 if payment_obj:
-    #                     if is_customer:
-    #                         company.sudo().write({'last_imported_payment_id': payment_obj.qbo_payment_id})
-    #                         company._cr.commit()
-    #
-    #                     elif is_vendor:
-    #                         company.sudo().write({'last_imported_bill_payment_id': payment_obj.qbo_payment_id})
-    #                         company._cr.commit()
-    #
-    #                 _logger.info(_("Payment created sucessfully! Payment Id: %s" % (payment_obj.id)))
-    #
-    #                 # _logger.info('Vendor Bill/Invoice does not exists for this payment \n%s', payment)
-    #                 # continue
-    #                 #
-    #             else:
-    #                 print('\n\\n\n\n\n\n %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55555555555555 \n\n')
-    #                 vals,dup_val = self._prepare_payment_dict(payment)
-    #                 if dup_val == 0:
-    #                     _logger.info('<---------Payment Amount is Zero----------> ')
-    #                     continue
-    #                 if invoice.state == 'draft':
-    #                     _logger.info('<---------Invoice is going to open state----------> %s', invoice)
-    #                     if invoice.invoice_line_ids:
-    #                         invoice.action_post()
-    #                 vals.update({'ref': invoice.name})
-    #                 # vals.update({'reconciled_invoice_ids': [(4, invoice.id, None)]})
-    #
-    #                 if 'journal_id' not in dup_val:
-    #                     get_payments = self.env['account.payment'].search([])
-    #                     for pay in get_payments:
-    #                         if pay.invoice_ids:
-    #                             for inv in pay.invoice_ids:
-    #                                 if inv.id == invoice.id:
-    #                                     if pay.journal_id:
-    #                                         dup_val.update({'journal_id': pay.journal_id.id})
-    #
-    #                 if invoice.partner_id.customer_rank:
-    #                     dup_val.update({'payment_type': 'inbound'})
-    #                     payment_obj = self.search([('qbo_payment_id', '=', payment.get("Id"))], limit=1)
-    #                 elif invoice.partner_id.supplier_rank:
-    #                     dup_val.update({'payment_type': 'outbound'})
-    #                     payment_obj = self.search([('qbo_bill_payment_id', '=', payment.get("Id"))], limit=1)
-    #
-    #                 if not payment_obj:
-    #                     if 'journal_id' not in dup_val:
-    #                         raise ValidationError(_('Payment Journal required'))
-    #                         # create payment
-    #                     # payment_obj = self.create(vals)
-    #                     # payment_obj.action_post()
-    #
-    #
-    #                     register_payments = self.env['account.payment.register'].with_context(active_model='account.move',
-    #                                                                                           active_ids=invoice.id).create(dup_val)
-    #
-    #                     payment_obj = register_payments._create_payments()
-    #                     payment_obj.sudo().write(vals)
-    #                     payment_obj.action_post()
-    #                     payment_obj._cr.commit()
-    #                     if payment_obj:
-    #
-    #                         if is_customer:
-    #                             company.sudo().write({'last_imported_payment_id':payment_obj.qbo_payment_id})
-    #                             company._cr.commit()
-    #
-    #                         elif is_vendor:
-    #
-    #                             company.sudo().write({'last_imported_bill_payment_id': payment_obj.qbo_payment_id})
-    #                             company._cr.commit()
-    #
-    #                 _logger.info(_("Payment created sucessfully! Payment Id: %s" % (payment_obj.id)))
-    #     return payment_obj
     
     @api.model
     def get_linked_vendor_bill_ref(self,quickbook_id):
@@ -735,10 +428,9 @@ class AccountJournal(models.Model):
         # print('111111111111111111111111111111111 : ',qbo_account_id)
         account_id = self.env['account.account'].get_account_ref(qbo_account_id)
         account = self.env['account.account'].browse(account_id)
-        journal_id = self.search([('type', 'in', ['bank', 'cash']), ('default_account_id', '=', account_id)], limit=1)
+        journal_id = self.search([('type', 'in', ['bank', 'cash']), ('payment_debit_account_id', '=', account_id)], limit=1)
         if not journal_id:
             raise ValidationError(_("Please, define payment journal for Account Name : %s " % (account.name)))
-        
         return journal_id.id
 
 

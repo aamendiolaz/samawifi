@@ -63,56 +63,9 @@
 		<field name="arch" type="xml">
 			<field name="partner_id" position="after">
 				<field name="qbo_invoice_id" readonly="1"/>
-				<field name="qbo_invoice_name" readonly="1"/>
-
 			</field>
 		</field>
 	</record>
-
-
-
-	<!-- Account move invoice tree inherited -->
-	<record model="ir.ui.view" id="qbo_view_account_invoice_tree3">
-		<field name="name">qbo.view.account.move.tree3</field>
-		<field name="model">account.move</field>
-		<field name="inherit_id" ref="account.view_invoice_tree" />
-		<field name="arch" type="xml">
-			<field name="name" position="after">
-<!--				<field name="qbo_invoice_id" readonly="1"/>-->
-				<field name="qbo_invoice_name"/>
-
-			</field>
-		</field>
-	</record>
-
-
-	<record id="qbo_invoice_search_view1" model="ir.ui.view">
-        <field name="name">qbo.invoice.select</field>
-        <field name="model">account.move</field>
-        <field name="inherit_id" ref="account.view_account_invoice_filter"/>
-        <field name="arch" type="xml">
-            <field name="partner_id" position="after">
-                <field name="qbo_invoice_name"/>
-            </field>
-		</field>
-	</record>
-
-
-
-	  <!--Inherit quotations search view-->
-    <record id="view_sale_order_inherit_search" model="ir.ui.view">
-      <field name="name">sale.order.search.expand.filter</field>
-      <field name="model">sale.order</field>
-      <field name="inherit_id" ref="sale.sale_order_view_search_inherit_quotation"/>
-      <field name="arch" type="xml">
-        <xpath expr="//search" position="inside">
-          <!-- This field will show up on the default filters
-               &lt; is the XML encoding for < and &gt; is the XML encoding for > -->
-          <filter string="Total &lt; 1000" name="total_under_1000" domain="[('amount_total', '&lt;', 1000)]"/>
-          <filter string="Total &gt;= 1000" name="total_above_1000" domain="[('amount_total', '&gt;=', 1000)]"/>
-        </xpath>
-      </field>
-    </record>
 
 
 	<!-- Account journal inherited -->

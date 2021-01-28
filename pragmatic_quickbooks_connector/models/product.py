@@ -6,7 +6,7 @@ from datetime import datetime, date
 import requests
 
 from odoo import api, fields, models,_
-from odoo.exceptions import ValidationError,UserError,Warning
+from odoo.exceptions import ValidationError,Warning
 
 _logger = logging.getLogger(__name__)
 
@@ -398,7 +398,7 @@ class Product(models.Model):
                                     if response.get('Fault').get('Error'):
                                         for message in response.get('Fault').get('Error'):
                                             if message.get('Detail'):
-                                                raise UserError(
+                                                raise Warning(
                                                     'Quickbooks Online Exception \n\n' + message.get('Detail'))
                 else:
                     parsed_dict = json.dumps(vals)
@@ -409,7 +409,7 @@ class Product(models.Model):
                             if response.get('Fault').get('Error'):
                                 for message in response.get('Fault').get('Error'):
                                     if message.get('Detail'):
-                                         raise UserError('Quickbooks Online Exception \n\n' + message.get('Detail'))
+                                         raise Warning('Quickbooks Online Exception \n\n' + message.get('Detail'))
                 if result:
                     if result.status_code == 200:
                         resp_parsed = json.loads(result.text)
@@ -437,8 +437,7 @@ class Product(models.Model):
             products = res.get('QueryResponse').get('Item', [])
         else:
             products = [res.get('Item')] or []
-        if len(products) == 0 :
-            raise UserError("It seems that all of the Products are already imported.")
+            
         for product in products:
             if product.get('Type') == 'Service' or product.get('Type') == 'Inventory' or product.get('Type') == 'NonInventory':
                 product_type = 'consu'
@@ -502,12 +501,12 @@ class Product(models.Model):
                     tax_id = tax.get_account_tax_ref(product.get('SalesTaxCodeRef').get('value'), product.get('SalesTaxCodeRef').get('name'),
                                                      type_tax_use="sale")
                     if tax_id:
-                        vals.update({'taxes_id': [(6, 0, [tax_id])]})
+                        vals.update({'taxes_id': [6, 0, [tax_id]]})
                 if 'PurchaseTaxCodeRef' in product:
                     tax_id = tax.get_account_tax_ref(product.get('PurchaseTaxCodeRef').get('value'), product.get('PurchaseTaxCodeRef').get('name'),
                                                      type_tax_use="purchase")
                     if tax_id:
-                        vals.update({'supplier_taxes_id': [(6, 0, [tax_id])]})
+                        vals.update({'supplier_taxes_id': [6, 0, [tax_id]]})
 
                 product_product = self.env['product.product']
                 if product.get('Sku'):
@@ -523,7 +522,6 @@ class Product(models.Model):
                     if created:
                         _logger.info(_("Product created sucessfully! product template Id: %s" % (prod_obj.id)))
                 else:
-
                     update_product = self.env['ir.config_parameter'].sudo().get_param(
                         'pragmatic_quickbooks_connector.update_product_import')
                     if update_product:
@@ -535,8 +533,6 @@ class Product(models.Model):
                         if updated:
                             _logger.info(_("Product updated sucessfully! product template Id: %s" % (prod_obj.id)))
                 self.env.cr.commit()
-
-
         return prod_obj
 
 
@@ -691,7 +687,7 @@ class ProductProduct(models.Model):
                 # Get quickbooks id of inventory asset COA from odoo
 #                 inv_asset = self.env['account.account'].search([('name', 'like', 'Inventory Asset')], limit=1)
                 if not product_id.categ_id.property_stock_valuation_account_id:
-                    raise UserError(_("Stock valuation account is missing for %s %s") % (product_id.default_code,product_id.name))
+                    raise Warning(_("Stock valuation account is missing for %s %s") % (product_id.default_code,product_id.name))
                 if not product_id.categ_id.property_stock_valuation_account_id.qbo_id:
                     product_id.categ_id.property_stock_valuation_account_id.export_single_account()
                 
@@ -753,7 +749,7 @@ class ProductProduct(models.Model):
                                                     'message': 'Quickbooks Online Exception \n\n' + message.get('Detail'),
                                                     'created_date': datetime.now(),
                                                 })
-                                                raise UserError(message.get('Detail'))
+                                                raise Warning(message.get('Detail'))
                                                 self._cr.commit
                                                 return False
                 else:
@@ -771,7 +767,7 @@ class ProductProduct(models.Model):
                                             'message': 'Quickbooks Online Exception \n\n' + message.get('Detail'),
                                             'created_date': datetime.now(),
                                         })
-                                        raise UserError(message.get('Detail'))
+                                        raise Warning(message.get('Detail'))
                                         self._cr.commit
                                         return False
                 if result:
