@@ -5,7 +5,7 @@ import logging
 import requests
 
 from odoo import api, fields, models, _
-from odoo.exceptions import ValidationError,Warning
+from odoo.exceptions import ValidationError,UserError,Warning
 
 _logger = logging.getLogger(__name__)
 
@@ -76,7 +76,7 @@ class AccountAccount(models.Model):
                         """.format(account.get('Name'))))
                     
         elif len(Account) == 0 :
-            raise Warning("It seems that all of the Chart of Accounts are already imported.")
+            raise UserError("It seems that all of the Chart of Accounts are already imported.")
     
         for account in Account:
             # Check for account number in QBO account sync data because it is mapped with code in odoo and which is mandatory field.
@@ -237,7 +237,7 @@ class AccountAccount(models.Model):
                     if response.get('Fault').get('Error'):
                         for message in response.get('Fault').get('Error'):
                             if message.get('Detail') and message.get('Message'):
-                                raise Warning(message.get('Message') + "\n\n" + message.get('Detail'))
+                                raise UserError(message.get('Message') + "\n\n" + message.get('Detail'))
 
                 return False
             #ATTEMPTING TO UPDATE THE ACCOUNT
@@ -262,7 +262,7 @@ class AccountAccount(models.Model):
                     if response.get('Fault').get('Error'):
                         for message in response.get('Fault').get('Error'):
                             if message.get('Detail') and message.get('Message'):
-                                raise Warning(message.get('Message') + "\n\n" + message.get('Detail'))
+                                raise UserError(message.get('Message') + "\n\n" + message.get('Detail'))
                 return False
 
     def send_account_to_qbo(self, vals):
@@ -296,7 +296,7 @@ class AccountAccount(models.Model):
                     if response.get('Fault').get('Error'):
                         for message in response.get('Fault').get('Error'):
                             if message.get('Detail') and message.get('Message'):
-                                raise Warning(message.get('Message') + "\n\n" + message.get('Detail'))
+                                raise UserError(message.get('Message') + "\n\n" + message.get('Detail'))
 
                 # raise ValidationError(_("[%s] %s" % (result.status_code, result.reason)))
                 return False

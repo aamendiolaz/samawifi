@@ -73,11 +73,12 @@
 					</group>
 					<group>
 						<group>
-							<button string="6-Import Product" type="object" name="import_product" class="oe_highlight" icon="fa-arrow-circle-down"/>
+							<button string="6-Import Product" type="object" name="import_product" class="oe_highlight" icon="fa-arrow-circle-down" help = "SKU ID should be Unique in QBO"/>
 						</group>
 						<group>
 							<field name="last_imported_product_id"/>
 						</group>
+						<h6 style="color:black">Please make sure that Unique SKU are maintained in QBO</h6>
 					</group>
 				    <group>
 						<group>
@@ -275,8 +276,9 @@
 						<group name="Credential">
 							<field name="client_id" />
 							<field name="client_secret" />
-							<!-- <field name="access_token"/>
-							<field name="qbo_refresh_token"/> -->
+<!--							<field name="access_token"/>-->
+<!--							<field name="qbo_refresh_token"/>-->
+<!--							<field name="realm_id"/>-->
 							<field name="access_token_expire_in" readonly="1"/>
 							<field name="refresh_token_expire_in" readonly="1"/>
 							<field name="minorversion"/>

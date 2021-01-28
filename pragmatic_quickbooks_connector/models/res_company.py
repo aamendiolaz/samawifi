@@ -301,7 +301,7 @@ class ResCompany(models.Model):
     last_imported_tax_id = fields.Char('Last Imported Tax Id', copy=False, default=0)
     last_imported_tax_agency_id = fields.Char('Last Imported Tax Agency Id', copy=False, default=0)
     last_imported_product_category_id = fields.Char('Last Imported Product Category Id', copy=False, default=0)
-    last_imported_product_id = fields.Char('Last Imported Product Id', copy=False, default=0)
+    last_imported_product_id = fields.Char('Last Imported Product Id', copy=False, default=0,help="SKU ID should be Unique in QBO")
     last_imported_customer_id = fields.Char('Last Imported Customer Id', copy=False, default=0)
     last_imported_vendor_id = fields.Char('Last Imported Vendor Id', copy=False, default=0)
     last_imported_payment_method_id = fields.Char('Last Imported Payment Method Id', copy=False, default=0)
@@ -494,7 +494,7 @@ class ResCompany(models.Model):
             if partner:
                 company.last_imported_customer_id = partner.qbo_customer_id
         else:
-            raise Warning("Empty Data")
+            raise UserError("Empty Data")
             _logger.warning(_('Empty data'))
 
     def import_vendors(self):
@@ -511,7 +511,7 @@ class ResCompany(models.Model):
             if partner:
                 self.last_imported_vendor_id = partner.qbo_vendor_id
         else:
-            raise Warning("Empty Data")
+            raise UserError("Empty Data")
             _logger.warning(_('Empty data'))
 
     def import_chart_of_accounts(self):
@@ -526,7 +526,7 @@ class ResCompany(models.Model):
             if acc:
                 self.last_acc_imported_id = acc.qbo_id
         else:
-            raise Warning("Empty Data")
+            raise UserError("Empty Data")
             _logger.warning(_('Empty data'))
 
     def import_tax(self):
@@ -542,7 +542,7 @@ class ResCompany(models.Model):
             if acc_tax:
                 company.last_imported_tax_id = acc_tax.qbo_tax_id or acc_tax.qbo_tax_rate_id
         else:
-            raise Warning("Empty Data")
+            raise UserError("Empty Data")
             _logger.warning(_('Empty data'))
 
     # @api.multi
@@ -560,7 +560,7 @@ class ResCompany(models.Model):
             if agency:
                 self.last_imported_tax_agency_id = agency.qbo_agency_id
         else:
-            raise Warning("Empty data")
+            raise UserError("Empty data")
             _logger.warning(_('Empty data'))
 
     # @api.multi
@@ -578,7 +578,7 @@ class ResCompany(models.Model):
             if category:
                 company.last_imported_product_category_id = category.qbo_product_category_id
         else:
-            raise Warning("Empty data")
+            raise UserError("Empty data")
             _logger.warning(_('Empty data'))
 
     # @api.multi
@@ -597,7 +597,7 @@ class ResCompany(models.Model):
             if product:
                 company.last_imported_product_id = product.qbo_product_id
         else:
-            raise Warning("Empty data")
+            raise UserError("Empty data")
             _logger.warning(_('Empty data in product!!!!!'))
 
     # @api.multi
@@ -648,7 +648,7 @@ class ResCompany(models.Model):
             if method:
                 company.last_imported_payment_method_id = method.qbo_method_id
         else:
-            raise Warning("Empty data")
+            raise UserError("Empty data")
             _logger.warning(_('Empty data'))
 
     def import_payment(self):
@@ -668,7 +668,7 @@ class ResCompany(models.Model):
             if payment:
                 company.last_imported_payment_id = payment.qbo_payment_id
         else:
-            raise Warning("Empty data")
+            raise UserError("Empty data")
             _logger.warning(_('Empty data'))
 
     # @api.multi
@@ -687,7 +687,7 @@ class ResCompany(models.Model):
             if payment:
                 company.last_imported_bill_payment_id = payment.qbo_bill_payment_id
         else:
-            raise Warning("Empty data")
+            raise UserError("Empty data")
             _logger.warning(_('Empty data'))
 
     def import_payment_term_from_quickbooks(self):
@@ -747,6 +747,8 @@ class ResCompany(models.Model):
                             _logger.info("Records are -----------> {}".format(recs))
                             if recs:
                                 company.x_quickbooks_last_paymentterm_imported_id = max(recs)
+                    else:
+                        raise UserError("It seems that all of the Payment Trems are already imported.")
 
                                 #     def createOdooParentId(self, quickbook_id):
 
@@ -1286,7 +1288,7 @@ class ResCompany(models.Model):
                                     _logger.info('Employee Updated Successfully :: %s', emp.get('Id'))
 
                     else:
-                        raise Warning("It seems that all of the Employees are already imported!")
+                        raise UserError("It seems that all of the Employees are already imported!")
                         _logger.warning(_('Empty data'))
 
     def State(self, state, country):
@@ -1366,7 +1368,7 @@ class ResCompany(models.Model):
                                 else:
                                     _logger.info('Department Not Updated Sucessfully..!!')
                     else:
-                        raise Warning("It seems that all of the Departments are already imported!")
+                        raise UserError("It seems that all of the Departments are already imported!")
                         _logger.warning(_('Empty data'))
 
     # ---------------------------------SALE ORDER------------------------------------------------------
@@ -1390,11 +1392,20 @@ class ResCompany(models.Model):
             _logger.info("************data{}".format(data.text))
             if data:
                 recs = []
+                _logger.info("************data{}".format(data.text))
 
                 parsed_data = json.loads(str(data.text))
+                if 'QueryResponse' in parsed_data:
+                    Estimate = parsed_data.get('QueryResponse').get('Estimate', [])
+                else:
+                    Estimate = [parsed_data.get('Estimate')] or []
+                if len(Estimate) == 0:
+                    raise UserError("It seems that all of the Sale Orders are already imported.")
+
                 if parsed_data:
 
                     if parsed_data.get('QueryResponse') and parsed_data.get('QueryResponse').get('Estimate'):
+                        custom_tax_id_id = [[6, False, []]]
 
                         for cust in parsed_data.get('QueryResponse').get('Estimate'):
                             if "CustomerRef"  in cust and cust.get('CustomerRef').get('value'):
@@ -1462,14 +1473,16 @@ class ResCompany(models.Model):
                                         custom_tax_id = None
                                         for i in cust.get('Line'):
                                             _logger.info("Particular instance is ------------> {}".format(i))
-                                            if  'TxnTaxDetail' in cust and cust.get('TxnTaxDetail'):
-                                                if cust.get('TxnTaxDetail').get('TxnTaxCodeRef'):
-                                                    _logger.info("Transaction data!!!")
-                                                    if cust.get('TxnTaxDetail').get('TxnTaxCodeRef').get('value'):
 
-                                                        qb_tax_id = cust.get('TxnTaxDetail').get('TxnTaxCodeRef').get('value')
+                                            if  'SalesItemLineDetail' in i and i.get('SalesItemLineDetail'):
+
+                                                if i.get('SalesItemLineDetail').get('TaxCodeRef'):
+                                                    _logger.info("Transaction data!!!")
+                                                    if i.get('SalesItemLineDetail').get('TaxCodeRef').get('value'):
+
+                                                        qb_tax_id = i.get('SalesItemLineDetail').get('TaxCodeRef').get('value')
                                                         record = self.env['account.tax']
-                                                        tax = record.search([('qbo_tax_id', '=', qb_tax_id)])
+                                                        tax = record.search([('qbo_tax_id', '=', qb_tax_id),('type_tax_use','=','sale')])
 
                                                         if tax:
                                                             custom_tax_id = [(6, 0, [tax.id])]
@@ -1490,7 +1503,7 @@ class ResCompany(models.Model):
                                                     if i.get('SalesItemLineDetail').get('TaxCodeRef'):
                                                         tax_val = i.get('SalesItemLineDetail').get('TaxCodeRef').get(
                                                             'value')
-                                                        if tax_val == 'TAX':
+                                                        if tax_val:
 
                                                             dict_l['tax_id'] = custom_tax_id
                                                         # else:
@@ -1521,6 +1534,12 @@ class ResCompany(models.Model):
                                                     if create_p:
                                                         company.quickbooks_last_sale_imported_id = int(cust.get('Id'))
 
+                                                else:
+                                                    raise UserError('Product ' + str(
+                                                    i.get('SalesItemLineDetail').get('ItemRef').get(
+
+                                                        'name')) + ' is not defined in Odoo. Sale Order ' +' Name : ' + cust.get(
+                                                    'DocNumber'))
                                 else:
                                     _logger.info("Else part------")
                                     res_partner = self.env['res.partner'].search(
@@ -1570,13 +1589,13 @@ class ResCompany(models.Model):
                                         custom_tax_id = None
                                         # discount_amt = 0
                                         for i in cust.get('Line'):
-                                            if 'TxnTaxDetail' in cust and  cust.get('TxnTaxDetail'):
-                                                if cust.get('TxnTaxDetail').get('TxnTaxCodeRef'):
+                                            if 'SalesItemLineDetail' in i and  i.get('SalesItemLineDetail'):
+                                                if i.get('SalesItemLineDetail').get('TaxCodeRef'):
 
-                                                    if cust.get('TxnTaxDetail').get('TxnTaxCodeRef').get('value'):
-                                                        qb_tax_id = cust.get('TxnTaxDetail').get('TxnTaxCodeRef').get('value')
+                                                    if i.get('SalesItemLineDetail').get('TaxCodeRef').get('value'):
+                                                        qb_tax_id = i.get('SalesItemLineDetail').get('TaxCodeRef').get('value')
                                                         record = self.env['account.tax']
-                                                        tax = record.search([('qbo_tax_id', '=', qb_tax_id)])
+                                                        tax = record.search([('qbo_tax_id', '=', qb_tax_id),('type_tax_use','=','sale')])
                                                         if tax:
                                                             custom_tax_id = [(6, 0, [tax.id])]
                                                         else:
@@ -1607,7 +1626,7 @@ class ResCompany(models.Model):
                                                             #           'value'))
                                                             tax_val = i.get('SalesItemLineDetail').get('TaxCodeRef').get(
                                                                 'value')
-                                                            if tax_val == 'TAX':
+                                                            if tax_val:
                                                                 # custom_tax_id = [(6, 0, [tax.id])]
                                                                 custom_tax_id_id = custom_tax_id
                                                             else:
@@ -1644,7 +1663,6 @@ class ResCompany(models.Model):
                                                                 # 'product_uom': 1,
                                                                 'price_unit': sp,
                                                             })
-
                                                         if create_po:
                                                             company.quickbooks_last_sale_imported_id = int(cust.get('Id'))
 
@@ -1705,9 +1723,15 @@ class ResCompany(models.Model):
                                                             _logger.info("Sale order line of creation is {}".format(create_p))
                                                             if create_p:
                                                                 company.quickbooks_last_sale_imported_id = int(cust.get('Id'))
-                    
+
+                                                else:
+                                                    raise UserError('Product ' + str(
+                                                    i.get('SalesItemLineDetail').get('ItemRef').get(
+
+                                                        'name')) + ' is not defined in Odoo. Sale Order ' +' Name : ' + cust.get(
+                                                    'DocNumber'))
                     else:
-                        raise Warning("It seems that all of the Sales Order are already imported!")
+                        raise UserError("It seems that all of the Sales Order are already imported!")
                         _logger.warning(_('Empty data'))
 
     # --------------------------------- INVOICE  -----------------------------------------------
@@ -1816,10 +1840,14 @@ class ResCompany(models.Model):
                                                 create_p = self.env['purchase.order.line'].create(dict_l)
                                                 if create_p:
                                                     company.quickbooks_last_purchase_imported_id = cust.get('Id')
-
+                                            else:
+                                                raise UserError('Product ' + str(
+                                                    i.get('ItemBasedExpenseLineDetail').get('ItemRef').get(
+                                                        'name')) + ' is not defined in Odoo. Purchase order number :' + cust.get(
+                                                    'DocNumber'))
                             else:
                                 _logger.info("All Purchase order seems to be imported!")
-                                raise Warning("All Purchase Orders are already imported!")
+                                # raise UserError("All Purchase Orders are already imported!")
 #                                 res_partner = self.env['res.partner'].search(
 #                                     [('qbo_vendor_id', '=', cust.get('VendorRef').get('value'))])
 # 
@@ -1927,7 +1955,7 @@ class ResCompany(models.Model):
 #                                                         company.quickbooks_last_purchase_imported_id = cust.get('Id')
 
                     else:
-                        raise Warning("It seems that all of the Purchase Orders are already imported!")
+                        raise UserError("It seems that all of the Purchase Orders are already imported!")
                         _logger.warning(_('Empty data'))
 
     # ---------------------------------VENDOR BILLS------------------------------------------------------
@@ -2371,7 +2399,7 @@ class ResCompany(models.Model):
 
                                                         company.quickbooks_last_vendor_bill_imported_id = cust.get('Id')
             else:
-                raise Warning("Empty Data")
+                raise UserError("Empty Data")
                 _logger.warning(_('Empty data'))
                 
                 
@@ -2817,7 +2845,7 @@ class ResCompany(models.Model):
                                                             if create_p:
                                                                 company.quickbooks_last_credit_note_imported_id = cust.get('Id')
             else:
-                raise Warning("Empty Data")
+                raise UserError("Empty Data")
                 _logger.warning(_('Empty data'))
               
 
@@ -2868,7 +2896,7 @@ class ResCompany(models.Model):
     def export_products(self):
         products = self.env['product.product'].search([])
         if not products:
-            raise Warning('There is no any record to be exported.')
+            raise UserError('There is no any record to be exported.')
         for product in products:
             product.export_product_to_qbo()
 
@@ -2876,7 +2904,7 @@ class ResCompany(models.Model):
     def export_payment_method(self):
         payment_method = self.env['account.journal'].search([('type','in',['cash','bank'])])
         if not payment_method:
-            raise Warning('There is no any record to be exported.')
+            raise UserError('There is no any record to be exported.')
         for method in payment_method:
             if not method.qbo_method_id:
                 # print("\n\n--- method ---",method)
@@ -2888,7 +2916,7 @@ class ResCompany(models.Model):
     def export_payment_terms(self):
         payment_term = self.env['account.payment.term'].search([])
         if not payment_term:
-            raise Warning('There is no any record to be exported.')
+            raise UserError('There is no any record to be exported.')
         for term in payment_term:
             term.export_payment_term_to_quickbooks()
 
@@ -2896,7 +2924,7 @@ class ResCompany(models.Model):
     def export_sale_order(self):
         sales = self.env['sale.order'].search([])
         if not sales:
-            raise Warning('There is no any record to be exported.')
+            raise UserError('There is no any record to be exported.')
         for sale in sales:
             if sale.quickbook_id and sale.state == 'sale':
                 _logger.info(_("Sale Order is already exported to QBO. %s" % sale))
@@ -2907,7 +2935,7 @@ class ResCompany(models.Model):
     def export_invoice(self):
         invoices = self.env['account.move'].search([])
         if not invoices:
-            raise Warning('There is no any record to be exported.')
+            raise UserError('There is no any record to be exported.')
         for inv in invoices:
             if inv.partner_id.customer_rank:
                 if inv.state == 'open' and inv.qbo_invoice_id:
@@ -2919,7 +2947,7 @@ class ResCompany(models.Model):
     def export_purchase_order(self):
         purchase = self.env['purchase.order'].search([])
         if not purchase:
-            raise Warning('There is no any record to be exported.')
+            raise UserError('There is no any record to be exported.')
         for order in purchase:
             if order.state == 'purchase' and order.quickbook_id:
                 _logger.info(_("Purchase Order is already exported to QBO. %s" % order))
@@ -2929,7 +2957,7 @@ class ResCompany(models.Model):
     def export_customer_payment(self):
         customer_payments = self.env['account.payment'].search([('payment_type','=','inbound')])
         if not customer_payments:
-            raise Warning('There is no record to be exported to QBO.')
+            raise UserError('There is no record to be exported to QBO.')
         for payment in customer_payments :
             if payment.qbo_payment_id :
                 _logger.info("Customer Payment is already exported to QBO.%s" % payment)
@@ -2939,7 +2967,7 @@ class ResCompany(models.Model):
     def export_vendor_payment(self):
         vendor_payments = self.env['account.payment'].search([('payment_type','=','outbound')])
         if not vendor_payments:
-            raise Warning('There is no record to be exported to QBO.')
+            raise UserError('There is no record to be exported to QBO.')
         for payment in vendor_payments :
             if payment.qbo_bill_payment_id :
                 _logger.info("Vendor Payment is already exported to QBO.%s" % payment)
@@ -2950,7 +2978,7 @@ class ResCompany(models.Model):
     def export_vendor_bill(self):
         invoices = self.env['account.move'].search([])
         if not invoices:
-            raise Warning('There is no any record to be exported.')
+            raise UserError('There is no any record to be exported.')
         for inv in invoices:
             if inv.partner_id.supplier_rank:
                 if inv.state == 'open' and inv.qbo_invoice_id:
@@ -2962,7 +2990,7 @@ class ResCompany(models.Model):
     def export_department(self):
         department = self.env['hr.department'].search([])
         if not department:
-            raise Warning('There is no any record to be exported.')
+            raise UserError('There is no any record to be exported.')
         for dept in department:
             dept.exportDepartment()
 
@@ -2970,6 +2998,6 @@ class ResCompany(models.Model):
     def export_employee(self):
         employee = self.env['hr.employee'].search([])
         if not employee:
-            raise Warning('There is no any record to be exported.')
+            raise UserError('There is no any record to be exported.')
         for emp in employee:
             emp.export_Employees_to_qbo()

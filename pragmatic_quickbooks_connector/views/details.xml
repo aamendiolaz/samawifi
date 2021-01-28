@@ -67,7 +67,7 @@
                 <field name="quickbook_id" readonly="1"/>
                 <field name="total" invisible="1"/>
                 <field name="percentage_amt" invisible="1"/>
-                <field class="o_address_zip" name="check" readonly="1"/>
+<!--                <field class="o_address_zip" name="check" readonly="1"/>-->
                 <field class="o_address_city" name="discount_type" string="" readonly="1"/>
                 <field class="o_address_city" name="amount" string="" readonly="1"/>
             </xpath>
@@ -94,7 +94,7 @@
             <field name="journal_id" position="before">
                 <field name="total" invisible="1"/>
                 <field name="percentage_amt" invisible="1"/>
-                <field class="o_address_zip" name="check" readonly="1"/>
+<!--                <field class="o_address_zip" name="check" readonly="1"/>-->
                 <field class="o_address_city" name="discount_type" string="" readonly="1"/>
                 <field class="o_address_city" name="amount" string="" readonly="1"/>
             </field>

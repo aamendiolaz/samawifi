@@ -21,7 +21,7 @@ class Purchase_Order(models.Model):
         }
 
         if line.taxes_id:
-            raise Warning("QBO does not have taxable purchase orders, Taxable purchase orders cannot be exported.")
+            raise UserError("QBO does not have taxable purchase orders, Taxable purchase orders cannot be exported.")
         
 
         if self.partner_id.supplier_rank:
