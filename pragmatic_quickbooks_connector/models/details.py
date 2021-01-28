@@ -51,7 +51,7 @@ class SaleOrder(models.Model):
                 #Add Product line
                 res_product = self.env['product.product'].search([('is_discount_product', '=', True)], limit=1)
                 if not res_product:
-                    raise Warning("There is no discount product available, Please add discount product")
+                    raise UserError("There is no discount product available, Please add discount product")
 
                 account = self.env['account.account'].search([('name', '=', 'Discount')])
                 #print("ACCOUNT ID --------------------------> ",account)
@@ -139,7 +139,7 @@ class SaleOrder(models.Model):
                     # Add Product line
                     res_product = self.env['product.product'].search([('is_discount_product', '=', True)], limit=1)
                     if not res_product:
-                        raise Warning("There is no discount product available, Please add discount product")
+                        raise UserError("There is no discount product available, Please add discount product")
                     account = self.env['account.account'].search([('name', '=', 'Discount')])
                     #print("ACCOUNT : ------------> ",account)
                     if vals.get('discount_type') == 'percentage':
@@ -171,7 +171,7 @@ class SaleOrder(models.Model):
                     #print("IN ELSE---------------->")
                     res_product = self.env['product.product'].search([('is_discount_product', '=', True)], limit=1)
                     if not res_product:
-                        raise Warning("There is no discount product available, Please add discount product")
+                        raise UserError("There is no discount product available, Please add discount product")
                     account = self.env['account.account'].search([('name', '=', 'Discount')])
 
                     if vals.get('discount_type') == 'percentage':

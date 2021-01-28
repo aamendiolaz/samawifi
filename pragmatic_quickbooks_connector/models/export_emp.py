@@ -277,7 +277,7 @@ class Employee(models.Model):
 
             })
         else:
-            raise Warning("Oops Some error occured.")
+            raise UserError("Oops Some error occured.")
             # raise UserError("Creation was successful !")
 
     @api.model

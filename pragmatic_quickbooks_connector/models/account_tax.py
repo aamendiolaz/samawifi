@@ -5,7 +5,7 @@ import logging
 import requests
 
 from odoo import api, fields, models, _
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError,UserError
 
 _logger = logging.getLogger(__name__)
 
@@ -33,11 +33,13 @@ class AccountTax(models.Model):
     def get_account_tax_ref(self, qbo_tax_id, name, type_tax_use="none"):
         tax = self.search(['&', '|', ('name', '=', name),
                            ('description', '=', name),
-                           ('qbo_tax_id', '=', qbo_tax_id)], limit=1, order="id Desc")
+                           ('qbo_tax_id', '=', qbo_tax_id),
+                           ('type_tax_use','=',type_tax_use)], limit=1, order="id Desc")
         if not tax:
             tax = self.search(['&', '|', ('name', '=', name),
                                ('description', '=', name),
-                               ('qbo_tax_rate_id', '=', qbo_tax_id)], limit=1, order="id Desc")
+                               ('qbo_tax_rate_id', '=', qbo_tax_id),
+                               ('type_tax_use','=',type_tax_use)], limit=1, order="id Desc")
         if tax:
             return tax.id
         else:
@@ -69,9 +71,13 @@ class AccountTax(models.Model):
             taxes = res.get('QueryResponse').get('TaxCode', [])
         else:
             taxes = [res.get('TaxCode')] or []
+        if len(taxes) == 0 :
+            raise UserError("It seems that all of the Taxes are already imported.")
         for tax in taxes:
             _logger.info(_("\n\nTax Name : %s" % (tax.get('Name', ''))))
             _logger.info(_("Tax Id : %s" % (tax.get('Id'))))
+            if not tax.get('Active') == True and len(taxes) ==1:
+                raise UserError("It seems that all of the Taxes are already imported.")
             if tax.get('Active') == True:
                 if tax.get('Taxable'):
                     vals = {
@@ -126,7 +132,7 @@ class AccountTax(models.Model):
 
                 else:
                     _logger.info("Taxable key not found!")
-                    raise Warning("Could not get appropriate response from quickbooks.")
+                    raise UserError("Could not get appropriate response from quickbooks.")
         return tax_obj
 
     @api.model
