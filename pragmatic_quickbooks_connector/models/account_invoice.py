@@ -124,6 +124,17 @@ class AccountPayment(models.Model):
     qbo_cc_ref_name = fields.Many2one('account.account',string = 'CC Account Reference Name')
 
     @api.model
+    def create(self, vals_list):
+        if vals_list.get('payment_type'):
+            if vals_list.get('payment_type')=='outbound':
+                if vals_list.get('partner_type') and vals_list.get('partner_id'):
+                    vals_list.update({'destination_account_id': self.env['res.partner'].search([('id', '=', vals_list.get('partner_id'))],
+                                                                                          limit=1).property_account_payable_id.id})
+                    vals_list['partner_type'] ='supplier'
+            res = super(AccountPayment, self).create(vals_list)
+        return res
+
+    @api.model
     def _prepare_payment_dict(self, payment):
         _logger.info('<--------- Customer Payment ----------> %s', payment)
         dup_val  = {
@@ -142,7 +153,10 @@ class AccountPayment(models.Model):
             dup_val.update({
                 'partner_type': 'customer',
                 'partner_id': customer_id,
+
+
             })
+            # vals.update({'destination_account_id': self.env['res.partner'].search([('id', '=', customer_id)], limit=1).property_account_receivable_id.id})
         if 'VendorRef' in payment:
 
             vendor_id = self.env['res.partner'].get_parent_vendor_ref(payment.get('VendorRef').get('value'))
@@ -152,7 +166,10 @@ class AccountPayment(models.Model):
             dup_val.update({
                 'partner_type': 'supplier',
                 'partner_id': vendor_id,
+
             })
+            # vals.update({'destination_account_id': self.env['res.partner'].search([('id', '=', vendor_id)], limit=1).property_account_payable_id.id})
+
 
         # For payment
         if 'DepositToAccountRef' in payment:
@@ -216,6 +233,9 @@ class AccountPayment(models.Model):
             else:
                 Payments = [res.get('BillPayment')] or []
 
+        if len(Payments) == 0 :
+            raise UserError("It seems that all of the Customers/Vendors Payments are already imported.")
+
         payment_obj = False
         count = 0
         for payment in Payments:
@@ -251,8 +271,6 @@ class AccountPayment(models.Model):
                                         invoice = self.env['account.move'].search([('qbo_invoice_id', '=', inv_rec.get('LinkedTxn')[0].get('TxnId'))],
                                                                                   limit=1)
 
-
-
                                     if not invoice:
 
                                         vals, dup_val = self._prepare_payment_dict(payment)
@@ -277,12 +295,11 @@ class AccountPayment(models.Model):
                                         elif is_vendor:
                                             dup_val.update({'payment_type': 'outbound'})
                                             dup_val.update({'partner_type': 'supplier'})
-
+                                        # print('\n\n------- VALLLLLLls ', vals)
+                                        # print('\n\n------- dupvall  ', dup_val)
                                         payment_obj = self.env['account.payment'].create(dup_val)
                                         payment_obj.action_post()
-
                                         payment_obj.sudo().write(vals)
-
                                         payment_obj._cr.commit()
                                         if payment_obj:
                                             if is_customer:
@@ -290,7 +307,7 @@ class AccountPayment(models.Model):
                                                 company._cr.commit()
 
                                             elif is_vendor:
-                                                company.sudo().write({'last_imported_bill_payment_id': payment_obj.qbo_payment_id})
+                                                company.sudo().write({'last_imported_bill_payment_id': payment_obj.qbo_bill_payment_id})
                                                 company._cr.commit()
 
                                         _logger.info(_("Payment created sucessfully! Payment Id: %s" % (payment_obj.id)))
@@ -321,10 +338,10 @@ class AccountPayment(models.Model):
                                                             if pay.journal_id:
                                                                 dup_val.update({'journal_id': pay.journal_id.id})
 
-                                        if invoice.partner_id.customer_rank:
-                                            dup_val.update({'payment_type': 'inbound'})
-                                        elif invoice.partner_id.supplier_rank:
-                                            dup_val.update({'payment_type': 'outbound'})
+                                        # if invoice.partner_id.customer_rank:
+                                        #     dup_val.update({'payment_type': 'inbound'})
+                                        # elif invoice.partner_id.supplier_rank:
+                                        #     dup_val.update({'payment_type': 'outbound'})
 
 
                                         if 'journal_id' not in dup_val:
@@ -333,38 +350,80 @@ class AccountPayment(models.Model):
                                         # payment_obj = self.create(vals)
                                         # payment_obj.action_post()
 
-                                        register_payments = self.env['account.payment.register'].with_context(
-                                            active_model='account.move',
-                                            active_ids=invoice.id).create(dup_val)
-                                        invoice = False
-                                        # print('\n\n------- VALLLLLLls ',vals)
-                                        # print('\n\n------- dupvall  ',dup_val)
-
-                                        payment_obj = register_payments._create_payments()
-                                        payment_obj.sudo().write(vals)
-                                        payment_obj.action_post()
-                                        payment_obj._cr.commit()
-                                        if payment_obj:
-
+                                        if not invoice.amount_residual <= 0:
                                             if is_customer:
-                                                if payment_obj.qbo_payment_id:
-                                                    company.sudo().write({'last_imported_payment_id': payment_obj.qbo_payment_id})
-                                                    company._cr.commit()
+                                                dup_val.update({'partner_type': 'customer'})
+                                                dup_val.update({'payment_type': 'inbound'})
 
                                             elif is_vendor:
-                                                if payment_obj.qbo_payment_id:
-                                                    company.sudo().write({'last_imported_bill_payment_id': payment_obj.qbo_payment_id})
-                                                    company._cr.commit()
+                                                dup_val.update({'payment_type': 'outbound'})
+                                                dup_val.update({'partner_type': 'supplier'})
 
-                                        _logger.info(_("Payment created sucessfully! Payment Id: %s" % (payment_obj.id)))
+
+                                            register_payments = self.env['account.payment.register'].with_context(
+                                                active_model='account.move',
+                                                active_ids=invoice.id).create(dup_val)
+
+                                            invoice = False
+                                            payment_obj = register_payments._create_payments()
+
+                                            payment_obj.sudo().write(vals)
+                                            payment_obj.action_post()
+                                            payment_obj._cr.commit()
+                                            if payment_obj:
+
+                                                if is_customer:
+                                                    if payment_obj.qbo_payment_id:
+                                                        company.sudo().write(
+                                                            {'last_imported_payment_id': payment_obj.qbo_payment_id})
+                                                        company._cr.commit()
+
+                                                elif is_vendor:
+                                                    if payment_obj.qbo_payment_id:
+                                                        company.sudo().write({
+                                                                                 'last_imported_bill_payment_id': payment_obj.qbo_bill_payment_id})
+                                                        company._cr.commit()
+
+                                            _logger.info(
+                                                _("Payment created sucessfully! Payment Id: %s" % (payment_obj.id)))
+                                        else:
+
+                                            del dup_val['payment_date']
+                                            if is_customer:
+                                                dup_val.update({'partner_type': 'customer'})
+                                                dup_val.update({'payment_type': 'inbound'})
+
+                                            elif is_vendor:
+                                                dup_val.update({'payment_type': 'outbound'})
+                                                dup_val.update({'partner_type': 'supplier'})
+
+                                            payment_obj = self.env['account.payment'].create(dup_val)
+                                            payment_obj.action_post()
+                                            payment_obj.sudo().write(vals)
+                                            payment_obj._cr.commit()
+                                            if payment_obj:
+                                                if is_customer:
+                                                    if payment_obj.qbo_payment_id:
+                                                        if payment_obj.qbo_payment_id:
+                                                            company.sudo().write({
+                                                                'last_imported_payment_id': payment_obj.qbo_payment_id})
+                                                            company._cr.commit()
+
+                                                elif is_vendor:
+                                                    if payment_obj.qbo_payment_id:
+                                                        if payment_obj.qbo_payment_id:
+                                                            company.sudo().write({
+                                                                'last_imported_bill_payment_id': payment_obj.qbo_bill_payment_id})
+                                                            company._cr.commit()
+
+                                            _logger.info(
+                                                _("Payment created sucessfully! Payment Id: %s" % (payment_obj.id)))
+
 
                     else:
                         continue
 
-
                 if not invoice and not payment_obj:
-                    # print('\n\\n\n\n\n\n=............................. 55555555555 ..............\n\n\n')
-
                     vals, dup_val = self._prepare_payment_dict(payment)
                     _logger.info('<------xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx----> ')
 
@@ -388,10 +447,8 @@ class AccountPayment(models.Model):
                     elif is_vendor:
                         dup_val.update({'payment_type': 'outbound'})
                         dup_val.update({'partner_type': 'supplier'})
-
                     payment_obj = self.env['account.payment'].create(dup_val)
                     payment_obj.action_post()
-
                     payment_obj.sudo().write(vals)
 
                     payment_obj._cr.commit()
@@ -405,7 +462,7 @@ class AccountPayment(models.Model):
                         elif is_vendor:
                             if payment_obj.qbo_payment_id:
                                 if payment_obj.qbo_payment_id:
-                                    company.sudo().write({'last_imported_bill_payment_id': payment_obj.qbo_payment_id})
+                                    company.sudo().write({'last_imported_bill_payment_id': payment_obj.qbo_bill_payment_id})
                                     company._cr.commit()
 
                     _logger.info(_("Payment created sucessfully! Payment Id: %s" % (payment_obj.id)))
@@ -487,7 +544,7 @@ class AccountPayment(models.Model):
     #                         company._cr.commit()
     #
     #                     elif is_vendor:
-    #                         company.sudo().write({'last_imported_bill_payment_id': payment_obj.qbo_payment_id})
+    #                         company.sudo().write({'last_imported_bill_payment_id': payment_obj.qbo_bill_payment_id})
     #                         company._cr.commit()
     #
     #                 _logger.info(_("Payment created sucessfully! Payment Id: %s" % (payment_obj.id)))
@@ -547,7 +604,7 @@ class AccountPayment(models.Model):
     #
     #                         elif is_vendor:
     #
-    #                             company.sudo().write({'last_imported_bill_payment_id': payment_obj.qbo_payment_id})
+    #                             company.sudo().write({'last_imported_bill_payment_id': payment_obj.qbo_bill_payment_id})
     #                             company._cr.commit()
     #
     #                 _logger.info(_("Payment created sucessfully! Payment Id: %s" % (payment_obj.id)))

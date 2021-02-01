@@ -152,8 +152,8 @@ class AccountInvoice(models.Model):
 
             if cust.get('TxnDate'):
                 dict_i['invoice_date'] = cust.get('TxnDate')
-        # if not dict_i.get('name'):
-        #     raise UserError("Please define Invoice/Bill number for QBO Id "+str(cust.get('Id')))
+        if not dict_i.get('partner_id'):
+            raise UserError("Please Import "+partner_type+" for QBO Id "+str(cust.get(partner_type).get('value')))
         return dict_i
 
     def import_invoice(self):
@@ -440,6 +440,9 @@ class AccountInvoice(models.Model):
             if 'AccountBasedExpenseLineDetail' in i and i.get('AccountBasedExpenseLineDetail'):
                 res_account = self.env['account.account'].search(
                     [('qbo_id', '=', i.get('AccountBasedExpenseLineDetail').get('AccountRef').get('value'))])
+                # print('\n\n=============== AccountBasedExpenseLineDetailAccountBasedExpenseLineDetailAccountBasedExpenseLineDetail ',res_account)
+                if not res_account:
+                    raise UserError('Account QBO ID '+i.get('AccountBasedExpenseLineDetail').get('AccountRef').get('value')+' doesnot exists in Odoo. ')
                 if res_account:
 
                     dict_ol.clear()
@@ -581,9 +584,18 @@ class AccountInvoice(models.Model):
                         dict_ol['account_id'] = res_account.id
                         _logger.info("PRODUCT has income account set")
 
-                    if invoice_obj.property_account_receivable_id:
-                        dict_col['account_id'] = invoice_obj.property_account_receivable_id.id
-                        dict_tol['account_id'] = invoice_obj.property_account_receivable_id.id
+                    if type=="in_invoice":
+                        if invoice_obj.property_account_payable_id:
+                            dict_col['account_id'] = invoice_obj.property_account_payable_id.id
+                            dict_tol['account_id'] = invoice_obj.property_account_payable_id.id
+
+                    if type=="out_invoice" or type=="out_refund":
+                        if invoice_obj.property_account_receivable_id:
+                            dict_col['account_id'] = invoice_obj.property_account_receivable_id.id
+                            dict_tol['account_id'] = invoice_obj.property_account_receivable_id.id
+                    # if invoice_obj.property_account_receivable_id:
+                    #     dict_col['account_id'] = invoice_obj.property_account_receivable_id.id
+                    #     dict_tol['account_id'] = invoice_obj.property_account_receivable_id.id
 
                     if 'account_id' in dict_ol and 'account_id' in dict_col:
                         _logger.info("\n\n Invoice Line is  ---> {}".format(dict_ol))
@@ -741,13 +753,22 @@ class AccountInvoice(models.Model):
                     else:
                         dict_ol['account_id'] = res_product.categ_id.property_account_income_categ_id.id
                         _logger.info("No Income account was set, taking from product category..")
+                    #
+                    # if invoice_obj.property_account_receivable_id:
+                    #     dict_col['account_id'] = invoice_obj.property_account_receivable_id.id
+                    #     dict_tol['account_id'] = invoice_obj.property_account_receivable_id.id
+                    if type=="in_invoice":
+                        if invoice_obj.property_account_payable_id:
+                            dict_col['account_id'] = invoice_obj.property_account_payable_id.id
+                            dict_tol['account_id'] = invoice_obj.property_account_payable_id.id
 
-                    if invoice_obj.property_account_receivable_id:
-                        dict_col['account_id'] = invoice_obj.property_account_receivable_id.id
-                        dict_tol['account_id'] = invoice_obj.property_account_receivable_id.id
-                    else:
-                        raise UserError("Account Receivable not set for Customer ---> {}".format(invoice_obj.name))
-                        _logger.info("No Property Account Receivable Set!")
+                    if type=="out_invoice" or type=="out_refund":
+                        if invoice_obj.property_account_receivable_id:
+                            dict_col['account_id'] = invoice_obj.property_account_receivable_id.id
+                            dict_tol['account_id'] = invoice_obj.property_account_receivable_id.id
+                    # else:
+                    #     raise UserError("Accounts Receivable/Payable not set for Customer ---> {}".format(invoice_obj.name))
+                    #     _logger.info("No Property Account Receivable Set!")
 
                     _logger.info("DICT COL IS ---> {}".format(dict_col))
                     _logger.info("DICT OL IS ---> {}".format(dict_ol))
@@ -835,6 +856,8 @@ class AccountInvoice(models.Model):
                 
             if 'AccountBasedExpenseLineDetail' in i and i.get('AccountBasedExpenseLineDetail'):
                 res_account = self.env['account.account'].search([('qbo_id', '=', i.get('AccountBasedExpenseLineDetail').get('AccountRef').get('value'))])
+                if not res_account:
+                    raise UserError('Account QBO ID '+i.get('AccountBasedExpenseLineDetail').get('AccountRef').get('value')+' doesnot exists in Odoo. ')
                 if res_account:
 
                     dict_ol.clear()

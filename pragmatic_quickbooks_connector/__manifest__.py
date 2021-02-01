@@ -1,6 +1,6 @@
 {
     'name': 'QuickBooks Online Odoo Connector',
-    'version': '14.0.25',
+    'version': '14.0.26',
     'category': 'Accounting',
     'author': 'Pragmatic TechSoft Pvt Ltd.',
     'website': 'http://www.pragtech.co.in',
