@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- Purchase quotation report -->
+    <template id="purchase_report_quotation_inherit_document" inherit_id="purchase.report_purchasequotation_document">
+        <xpath expr="/t/t[1]" position="attributes">
+            <attribute name="t-call">itatix_purchase_discount.external_purchase_layout</attribute>
+        </xpath>
+        <xpath expr="/t/t/t[4]" position="replace">
+            <t t-if="o.partner_shipping_id">
+                <t t-set="information_block">
+                    <strong>SHIP TO:</strong>
+                    <div t-field="o.partner_shipping_id" t-options="{&quot;widget&quot;: &quot;contact&quot;, &quot;fields&quot;: [&quot;address&quot;, &quot;name&quot;, &quot;phone&quot;], &quot;no_marker&quot;: True, &quot;phone_icons&quot;: True}" name="purchase_shipping_address"/>
+                </t>
+            </t>
+        </xpath>
+        <xpath expr="/t/t/t[2]/div" position="before">
+            <strong>VENDOR</strong>
+        </xpath>
+        <xpath expr="//table/thead/tr/th[@name='th_expected_date']" position="replace"/>
+        <xpath expr="//table/tbody/t/tr/t/td[2]" position="replace"/>
+        <xpath expr="/t/t/div/div[1]" position="after">
+            <div class="row">
+                <div class="col-3">
+                    <span>
+                        <strong>Payment Term:</strong>
+                        <br/>
+                    </span>
+                    <span t-field="o.payment_term_id"/>
+                </div>
+                <div class="col-3"/>
+                <div class="col-3"/>
+                <div class="col-3"/>
+            </div>
+        </xpath>
+        <xpath expr="/t/t/div/div[2]" position="after">
+            <div class="row">
+                <div class="col-3">
+                    <span>
+                        <strong>Deal:</strong>
+                        <br/>
+                    </span>
+                    <span t-field="o.dna"/>
+                </div>
+                <div class="col-3"/>
+                <div class="col-3"/>
+                <div class="col-3"/>
+            </div>
+        </xpath>
+        <xpath expr="/t/t/div/div[2]/div[4]" position="inside">
+            <span>
+                <strong>Final User:</strong>
+                <br/>
+            </span>
+        </xpath>
+        <xpath expr="/t/t/div/div[2]/div[4]" position="inside">
+            <span t-field="o.final_user_id"/>
+        </xpath>
+        <xpath expr="/t/t/div/div[3]/div[4]" position="inside">
+            <span>
+                <strong>Channel:</strong>
+                <br/>
+            </span>
+        </xpath>
+        <xpath expr="/t/t/div/div[3]/div[4]" position="inside">
+            <span t-field="o.channel"/>
+        </xpath>
+        <xpath expr="//tbody/t[1]" position="before">
+            <t t-set="counter" t-value="0"/>
+        </xpath>
+        <xpath expr="//thead/tr/th[1]" position="before">
+            <th id="head_counter">
+            </th>
+        </xpath>
+        <xpath expr="//tbody/t/tr/t[1]/td[1]" position="before">
+            <td>
+                <t t-set="counter" t-value="counter + 1"/>
+                <t t-esc="counter"/>
+            </td>
+        </xpath>
+    </template>
+    <!-- EXTERNAL LAYOUT STANDARD PURCHASE -->
+    <template id="external_layout_standard_purchase">
+        <div t-attf-class="header o_company_#{company.id}_layout" t-att-style="report_header_style">
+            <div class="row">
+                <div class="col-3 mb4">
+                    <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" style="max-height: 45px;" alt="Logo"/>
+                </div>
+                <div class="col-9 text-right" style="margin-top:22px;" t-field="company.report_header" name="moto"/>
+            </div>
+            <div t-if="company.logo or company.report_header" class="row zero_min_height">
+                <div class="col-12">
+                    <div style="border-bottom: 1px solid black;"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6" name="company_address">
+                    <strong>BILL TO</strong>
+                    <div t-field="company.partner_id"
+                         t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": true}'
+                    />
+                </div>
+            </div>
+        </div>
+
+        <div t-attf-class="article o_report_layout_standard o_company_#{company.id}_layout"  t-att-data-oe-model="o and o._name" t-att-data-oe-id="o and o.id" t-att-data-oe-lang="o and o.env.context.get('lang')">
+            <div class="pt-5">
+                <t t-call="web.address_layout"/>
+            </div>
+            <t t-raw="0"/>
+        </div>
+
+        <div t-attf-class="footer o_standard_footer o_company_#{company.id}_layout">
+            <div class="text-center" style="border-top: 1px solid black;">
+                <ul class="list-inline mb4">
+                    <li t-if="company.phone" class="list-inline-item d-inline"><span class="o_force_ltr" t-field="company.phone"/></li>
+                    <li t-if="company.email" class="list-inline-item d-inline"><span t-field="company.email"/></li>
+                    <li t-if="company.website" class="list-inline-item d-inline"><span t-field="company.website"/></li>
+                    <li t-if="company.vat" class="list-inline-item d-inline"><t t-esc="company.country_id.vat_label or 'Tax ID'"/>: <span t-field="company.vat"/></li>
+                </ul>
+
+                <div name="financial_infos">
+                    <span t-field="company.report_footer"/>
+                </div>
+
+                <div t-if="report_type == 'pdf'" class="text-muted">
+                    Page: <span class="page"/> / <span class="topage"/>
+                </div>
+            </div>
+        </div>
+    </template>
+    <!-- GENERAL LAYOUT EXTERNAL -->
+    <template id="external_purchase_layout">
+        <t t-if="not o" t-set="o" t-value="doc"/>
+
+        <t t-if="not company">
+            <t t-if="company_id">
+                <t t-set="company" t-value="company_id"/>
+            </t>
+            <t t-elif="o and 'company_id' in o">
+                <t t-set="company" t-value="o.company_id.sudo()"/>
+            </t>
+            <t t-else="else">
+                <t t-set="company" t-value="res_company"/>
+            </t>
+        </t>
+        <t t-call="itatix_purchase_discount.external_layout_standard_purchase"><t t-raw="0"/></t>
+    </template>
+    <!-- final report quotation purchase report -->
+
+</odoo>

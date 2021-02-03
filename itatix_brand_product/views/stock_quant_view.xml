@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- Vista en de arbol y pivote -->
+        <record id="quant_search_view_sama" model="ir.ui.view">
+           <field name="name">stock.quant.view.search_sama</field>
+           <field name="model">stock.quant</field>
+            <field name="inherit_id" ref="stock.quant_search_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@name='productgroup']" position="after">
+                    <filter string="Sama Category" name="sama_category_id" context="{'group_by': 'sama_category_id'}"/>
+                    <filter string="Sama subcategory" name="sama_subcategory_id" context="{'group_by': 'sama_subcategory_id'}"/>
+                    <filter string="Brand" name="sama_brand_id" context="{'group_by':'sama_brand_id'}"/>
+                </xpath>
+            </field>
+        </record>
+        <record id="view_inventory_valuation_search_sama" model="ir.ui.view">
+            <field name="name">stock.valuation.layer.search_sama</field>
+            <field name="model">stock.valuation.layer</field>
+            <field name="inherit_id" ref="stock_account.view_inventory_valuation_search"/>
+            <field name="arch" type="xml">
+                <xpath expr="//filter[@name='group_by_product_id']" position="after">
+                    <filter string="Sama Category" name="sama_category_id" context="{'group_by': 'sama_category_id'}"/>
+                    <filter string="Sama subcategory" name="sama_subcategory_id" context="{'group_by': 'sama_subcategory_id'}"/>
+                    <filter string="Brand" name="sama_brand_id" context="{'group_by':'sama_brand_id'}"/>
+                </xpath>
+
+            </field>
+        </record>
+    </data>
+</odoo>

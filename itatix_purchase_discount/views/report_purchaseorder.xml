@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <template
+        id="report_purchaseorder_document_inherit"
+        inherit_id="purchase.report_purchaseorder_document">
+        <xpath expr="/t/t[1]" position="attributes">
+            <attribute name="t-call">itatix_purchase_discount.external_purchase_layout</attribute>
+        </xpath>
+        <xpath expr="/t/t/t[4]" position="replace">
+            <t t-if="o.partner_shipping_id">
+                <t t-set="information_block">
+                    <strong>SHIP TO:</strong>
+                    <div t-field="o.partner_shipping_id" t-options="{&quot;widget&quot;: &quot;contact&quot;, &quot;fields&quot;: [&quot;address&quot;, &quot;name&quot;, &quot;phone&quot;], &quot;no_marker&quot;: True, &quot;phone_icons&quot;: True}" name="purchase_shipping_address"/>
+                </t>
+            </t>
+        </xpath>
+        <xpath expr="/t/t/t[2]/div" position="before">
+            <strong>VENDOR</strong>
+        </xpath>
+        <xpath expr="//table[1]/thead/tr//th[@name='th_price_unit']" position="before">
+            <th class="text-right">
+                <strong>List price</strong>
+            </th>
+            <th class="text-right">
+                <strong>Disc. (%)</strong>
+            </th>
+        </xpath>
+        <xpath expr="//td[span[@t-field='line.price_unit']]" position="before">
+            <td class="text-right">
+                <span t-field="line.price_list"/>
+            </td>
+            <td class="text-right">
+                <span t-field="line.discount"/>
+            </td>
+        </xpath>
+        <xpath expr="//table/tbody/t/tr/t/td[@name='td_taxes']" position="replace"/>
+        <xpath expr="//table/tbody/t/tr/t/td[2]" position="replace"/>
+        <xpath expr="//table/thead/tr/th[@name='th_taxes']" position="replace"/>
+        <xpath expr="//table/thead/tr/th[@name='th_date_req']" position="replace"/>
+        <xpath expr="/t/t/div/div[1]" position="after">
+            <div class="row">
+                <div class="col-3">
+                    <span>
+                        <strong>Payment Term:</strong>
+                        <br/>
+                    </span>
+                    <span t-field="o.payment_term_id"/>
+                </div>
+                <div class="col-3"/>
+                <div class="col-3"/>
+                <div class="col-3"/>
+            </div>
+        </xpath>
+        <xpath expr="/t/t/div/div[2]" position="after">
+            <div class="row address">
+                <div class="col-5">
+                    <strong>Channel:</strong>
+                    <div t-field="o.channel" t-options-widget="'contact'"/>
+                </div>
+                <div class="col-5 offset-2"/>
+            </div>
+        </xpath>
+        <xpath expr="/t/t/div/div[3]/div[2]" position="inside">
+            <strong>Final user:</strong>
+            <div t-field="o.final_user_id" t-options-widget="'contact'"/>
+        </xpath>
+        <xpath expr="/t/t/div/div[3]" position="after">
+            <div class="row">
+                <div class="col-3">
+                    <span>
+                        <strong>Deal:</strong>
+                        <br/>
+                    </span>
+                    <span t-field="o.dna"/>
+                </div>
+                <div class="col-3"/>
+                <div class="col-3"/>
+                <div class="col-3"/>
+            </div>
+        </xpath>
+        <xpath expr="//tbody/t[1]" position="after">
+            <t t-set="counter" t-value="0"/>
+        </xpath>
+        <xpath expr="//thead/tr/th[1]" position="before">
+            <th id="head_counter">
+            </th>
+        </xpath>
+        <xpath expr="//tbody/t[3]/tr/t[1]/td[1]" position="before">
+            <td>
+                <t t-set="counter" t-value="counter + 1"/>
+                <t t-esc="counter"/>
+            </td>
+        </xpath>
+    </template>
+</odoo>

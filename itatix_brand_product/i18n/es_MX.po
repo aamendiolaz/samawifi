@@ -1,0 +1,224 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* itatix_brand_product
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 14.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-01-24 16:26+0000\n"
+"PO-Revision-Date: 2021-01-24 09:28-0700\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: \n"
+"Language: es_MX\n"
+"X-Generator: Poedit 2.0.6\n"
+
+#. module: itatix_brand_product
+#: model:ir.actions.act_window,name:itatix_brand_product.sama_brand_action
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sale_report__sama_brand_id
+#: model:ir.model.fields,field_description:itatix_brand_product.field_stock_report__sama_brand_id
+#: model:ir.ui.menu,name:itatix_brand_product.sama_menu_brand
+#: model_terms:ir.ui.view,arch_db:itatix_brand_product.product_template_product_form_sama
+#: model_terms:ir.ui.view,arch_db:itatix_brand_product.quant_search_view_sama
+#: model_terms:ir.ui.view,arch_db:itatix_brand_product.view_inventory_valuation_search_sama
+#: model_terms:ir.ui.view,arch_db:itatix_brand_product.view_order_sama_search_inherit
+msgid "Brand"
+msgstr "Marca"
+
+#. module: itatix_brand_product
+#: model:ir.actions.act_window,name:itatix_brand_product.sama_category_action
+#: model:ir.ui.menu,name:itatix_brand_product.sama_menu_category
+msgid "Category"
+msgstr "Categoría"
+
+#. module: itatix_brand_product
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sama_brand__create_uid
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sama_category__create_uid
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sama_subcategory__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: itatix_brand_product
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sama_brand__create_date
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sama_category__create_date
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sama_subcategory__create_date
+msgid "Created on"
+msgstr "Creado en"
+
+#. module: itatix_brand_product
+#: model:ir.model.fields,field_description:itatix_brand_product.field_product_product__display_name
+#: model:ir.model.fields,field_description:itatix_brand_product.field_product_template__display_name
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sale_report__display_name
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sama_brand__display_name
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sama_category__display_name
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sama_subcategory__display_name
+#: model:ir.model.fields,field_description:itatix_brand_product.field_stock_quant__display_name
+#: model:ir.model.fields,field_description:itatix_brand_product.field_stock_report__display_name
+#: model:ir.model.fields,field_description:itatix_brand_product.field_stock_valuation_layer__display_name
+msgid "Display Name"
+msgstr "Nombre mostrado"
+
+#. module: itatix_brand_product
+#: model:res.groups,name:itatix_brand_product.group_sama_category
+msgid "Edit sama brand, category and subcategory"
+msgstr "Editar marca, categoría y subcategoría"
+
+#. module: itatix_brand_product
+#: model:ir.model.fields,field_description:itatix_brand_product.field_product_product__id
+#: model:ir.model.fields,field_description:itatix_brand_product.field_product_template__id
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sale_report__id
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sama_brand__id
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sama_category__id
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sama_subcategory__id
+#: model:ir.model.fields,field_description:itatix_brand_product.field_stock_quant__id
+#: model:ir.model.fields,field_description:itatix_brand_product.field_stock_report__id
+#: model:ir.model.fields,field_description:itatix_brand_product.field_stock_valuation_layer__id
+msgid "ID"
+msgstr ""
+
+#. module: itatix_brand_product
+#: model:ir.model.fields,field_description:itatix_brand_product.field_product_product____last_update
+#: model:ir.model.fields,field_description:itatix_brand_product.field_product_template____last_update
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sale_report____last_update
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sama_brand____last_update
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sama_category____last_update
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sama_subcategory____last_update
+#: model:ir.model.fields,field_description:itatix_brand_product.field_stock_quant____last_update
+#: model:ir.model.fields,field_description:itatix_brand_product.field_stock_report____last_update
+#: model:ir.model.fields,field_description:itatix_brand_product.field_stock_valuation_layer____last_update
+msgid "Last Modified on"
+msgstr "Última modificación el"
+
+#. module: itatix_brand_product
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sama_brand__write_uid
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sama_category__write_uid
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sama_subcategory__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: itatix_brand_product
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sama_brand__write_date
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sama_category__write_date
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sama_subcategory__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: itatix_brand_product
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sama_brand__name
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sama_category__name
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sama_subcategory__name
+msgid "Name"
+msgstr "Nombre"
+
+#. module: itatix_brand_product
+#: model:ir.model,name:itatix_brand_product.model_product_product
+msgid "Product"
+msgstr "Producto"
+
+#. module: itatix_brand_product
+#: model:ir.model,name:itatix_brand_product.model_product_template
+msgid "Product Template"
+msgstr "Plantilla de producto"
+
+#. module: itatix_brand_product
+#: model:ir.model,name:itatix_brand_product.model_stock_quant
+msgid "Quants"
+msgstr ""
+
+#. module: itatix_brand_product
+#: model:ir.model,name:itatix_brand_product.model_sale_report
+msgid "Sales Analysis Report"
+msgstr "Informe de análisis de ventas"
+
+#. module: itatix_brand_product
+#: model:ir.ui.menu,name:itatix_brand_product.sama_menu_parent
+msgid "Sama"
+msgstr "Sama"
+
+#. module: itatix_brand_product
+#: model:ir.model.fields,field_description:itatix_brand_product.field_product_product__sama_brand_id
+#: model:ir.model.fields,field_description:itatix_brand_product.field_product_template__sama_brand_id
+#: model:ir.model.fields,field_description:itatix_brand_product.field_stock_quant__sama_brand_id
+#: model:ir.model.fields,field_description:itatix_brand_product.field_stock_valuation_layer__sama_brand_id
+msgid "Sama Brand"
+msgstr "Marca"
+
+#. module: itatix_brand_product
+#: model:ir.model.fields,field_description:itatix_brand_product.field_product_product__sama_category_id
+#: model:ir.model.fields,field_description:itatix_brand_product.field_product_template__sama_category_id
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sale_report__sama_category_id
+#: model:ir.model.fields,field_description:itatix_brand_product.field_stock_quant__sama_category_id
+#: model:ir.model.fields,field_description:itatix_brand_product.field_stock_report__sama_category_id
+#: model:ir.model.fields,field_description:itatix_brand_product.field_stock_valuation_layer__sama_category_id
+#: model_terms:ir.ui.view,arch_db:itatix_brand_product.quant_search_view_sama
+#: model_terms:ir.ui.view,arch_db:itatix_brand_product.view_inventory_valuation_search_sama
+#: model_terms:ir.ui.view,arch_db:itatix_brand_product.view_order_sama_search_inherit
+msgid "Sama Category"
+msgstr "Categoría Sama"
+
+#. module: itatix_brand_product
+#: model:ir.model.fields,field_description:itatix_brand_product.field_product_product__sama_subcategory_id
+#: model:ir.model.fields,field_description:itatix_brand_product.field_product_template__sama_subcategory_id
+#: model:ir.model.fields,field_description:itatix_brand_product.field_sale_report__sama_subcategory_id
+#: model:ir.model.fields,field_description:itatix_brand_product.field_stock_quant__sama_subcategory_id
+#: model:ir.model.fields,field_description:itatix_brand_product.field_stock_report__sama_subcategory_id
+#: model:ir.model.fields,field_description:itatix_brand_product.field_stock_valuation_layer__sama_subcategory_id
+#: model_terms:ir.ui.view,arch_db:itatix_brand_product.view_order_sama_search_inherit
+msgid "Sama Subcategory"
+msgstr "Subcategoría Sama"
+
+#. module: itatix_brand_product
+#: model_terms:ir.ui.view,arch_db:itatix_brand_product.quant_search_view_sama
+#: model_terms:ir.ui.view,arch_db:itatix_brand_product.view_inventory_valuation_search_sama
+msgid "Sama subcategory"
+msgstr "Subcategoría Sama"
+
+#. module: itatix_brand_product
+#: model:ir.model,name:itatix_brand_product.model_stock_report
+msgid "Stock Report"
+msgstr "Informe de Existencias"
+
+#. module: itatix_brand_product
+#: model:ir.model,name:itatix_brand_product.model_stock_valuation_layer
+msgid "Stock Valuation Layer"
+msgstr "Capa de valoración de stock"
+
+#. module: itatix_brand_product
+#: model:ir.actions.act_window,name:itatix_brand_product.sama_subcategory_action
+#: model:ir.ui.menu,name:itatix_brand_product.sama_menu_subcategory
+msgid "Subcategory"
+msgstr "Subcategoría"
+
+#. module: itatix_brand_product
+#: model:ir.model,name:itatix_brand_product.model_sama_brand
+msgid "sama.brand"
+msgstr ""
+
+#. module: itatix_brand_product
+#: model:ir.model,name:itatix_brand_product.model_sama_category
+msgid "sama.category"
+msgstr ""
+
+#. module: itatix_brand_product
+#: model:ir.model,name:itatix_brand_product.model_sama_subcategory
+msgid "sama.subcategory"
+msgstr ""
+
+#. module: itatix_brand_product
+#: model_terms:ir.ui.view,arch_db:itatix_brand_product.sama_brand_view_tree
+msgid "sama_brand_tree"
+msgstr ""
+
+#. module: itatix_brand_product
+#: model_terms:ir.ui.view,arch_db:itatix_brand_product.sama_subcategory_view_tree
+msgid "sama_subcategory_tree"
+msgstr ""
+
+#. module: itatix_brand_product
+#: model_terms:ir.ui.view,arch_db:itatix_brand_product.sama_category_view_tree
+msgid "sama_tree"
+msgstr ""

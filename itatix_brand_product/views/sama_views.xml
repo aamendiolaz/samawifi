@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="sama_category_view_tree" model="ir.ui.view">
+            <field name="name">sama.category.tree.view</field>
+            <field name="model">sama.category</field>
+            <field name="arch" type="xml">
+                <tree string="sama_tree">
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>
+        <record id="sama_subcategory_view_tree" model="ir.ui.view">
+            <field name="name">sama.subcategory.tree.view</field>
+            <field name="model">sama.subcategory</field>
+            <field name="arch" type="xml">
+                <tree string="sama_subcategory_tree">
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>
+        <record id="sama_brand_view_tree" model="ir.ui.view">
+            <field name="name">sama.brand.tree.view</field>
+            <field name="model">sama.brand</field>
+            <field name="arch" type="xml">
+                <tree string="sama_brand_tree">
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>
+        <!-- action brand -->
+        <record id="sama_brand_action" model="ir.actions.act_window">
+            <field name="name">Brand</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">sama.brand</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <!-- action category sama -->
+        <record id="sama_category_action" model="ir.actions.act_window">
+            <field name="name">Category</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">sama.category</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <!-- action subcategory sama -->
+        <record id="sama_subcategory_action" model="ir.actions.act_window">
+            <field name="name">Subcategory</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">sama.subcategory</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <!-- Submenu item parent root -->
+        <menuitem id="sama_menu_brand" name="Brand" parent="sale.menu_sale_config" action="sama_brand_action"/>
+        <menuitem id="sama_menu_category" name="Category" parent="sale.menu_sale_config" action="sama_category_action"/>
+        <menuitem id="sama_menu_subcategory" name="Subcategory" parent="sale.menu_sale_config" action="sama_subcategory_action"/>
+    </data>
+</odoo>
