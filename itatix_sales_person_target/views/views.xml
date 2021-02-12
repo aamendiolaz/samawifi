@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<!-- Sales Target Form View -->
+	<record id="sales_target_form_view" model="ir.ui.view">
+		<field name="name">sales.target.form.view</field>
+		<field name="model">sales.target</field>
+		<field name="arch" type="xml">
+			<form>
+				<header>
+					<button string="Load Dates" name="create_months" type="object" class="btn-primary" />
+				</header>
+				<sheet>
+					<group>
+						<group>
+							<field name="sales_team_id"/>
+							<field name="team_leader" readonly="1" force_save="1"/>
+							<field name="salesperson" required="1" />
+						</group>
+						<group>
+							<label for="target" />
+							<div>
+								<field name="target" class="oe_inline" widget="monetory"
+									required="1" />
+								<field name="currency_id" class="oe_inline" required="1" />
+							</div>
+							<field name="monthly_target" widget="monetory"></field>
+						</group>
+						<group>
+							<field name="start_date"/>
+							<field name="end_date"/>
+							<field name="sales" />
+						</group>
+						<group>
+							<field name="target_achieve" required="1" />
+							<label for="perct_achievement" />
+							<div>
+								<field name="perct_achievement" class="oe_inline"
+									style="vertical-align:baseline" />
+								%
+							</div>
+							<field name="achieve" widget="monetory" invisible="0" />
+						</group>
+					</group>
+					<notebook>
+						<page string="Target Lines">
+							<field name="sales_target_lines" string="Monthly Sales Target Lines"
+								context="{'default_user_id' : salesperson}">
+								<tree>
+									<field name="date_order"></field>
+									<field name="user_id"></field>
+									<field name="monthly_target"></field>
+									<field name="currency_id"></field>
+									<field name="monthly_target_achieve"></field>
+									<field name="no_of_sales"></field>
+									<field name="monthly_target_achieve_per"></field>
+									<field name="target_id" invisible="1"></field>
+								</tree>
+							</field>
+						</page>
+					</notebook>
+				</sheet>
+			</form>
+		</field>
+	</record>
+
+	<!-- Sales Target Tree View -->
+	<record id="sales_target_tree_view" model="ir.ui.view">
+		<field name="name">sale.target.tree.view</field>
+		<field name="model">sales.target</field>
+		<field name="arch" type="xml">
+			<tree>
+				<field name="salesperson" />
+				<field name="start_date" />
+				<field name="end_date" />
+				<field name="target" />
+				<field name="monthly_target" attrs="{'invisible': [('monthly_target','>', 0.0)]}"/>
+				<field name="sales" />
+				<field name="target_achieve" />
+				<field name="perct_achievement" />
+			</tree>
+		</field>
+	</record>
+
+	<!-- Sales Target Action -->
+	<record id="sales_target_action" model="ir.actions.act_window">
+		<field name="name">Sales Target</field>
+		<field name="res_model">sales.target</field>
+		<field name="view_mode">tree,form</field>
+	</record>
+
+	<!-- Sales Target Menuitem -->
+	<menuitem id="menu_sales_target" parent="sale.menu_sale_config"
+		sequence="10" action="sales_target_action"
+		groups="sales_team.group_sale_manager,itatix_sales_person_target.group_team_leader" />
+
+	<menuitem id="sale.menu_sale_config" name="Configuration"
+		parent="sale.sale_menu_root" sequence="6"
+		groups="sales_team.group_sale_manager,itatix_sales_person_target.group_team_leader" />
+
+	<menuitem id="sale.menu_sale_report" name="Reporting"
+		parent="sale.sale_menu_root" sequence="5"
+		groups="sales_team.group_sale_manager,sales_team.group_sale_salesman" />
+
+	<record id="sale_view_order_product_search_inherit" model="ir.ui.view">
+		<field name="name">sale.report.search.inherit</field>
+		<field name="model">sale.report</field>
+		<field name="inherit_id" ref="sale.view_order_product_search" />
+		<field name="arch" type="xml">
+			<field name="date" position="after">
+				<filter name="SalesDone" string="Sales Done" domain="[('state','=','done')]" />
+
+			</field>
+		</field>
+	</record>
+
+	<record id="sale.action_order_report_all" model="ir.actions.act_window">
+		<field name="context">{'search_default_SalesDone':1,'search_default_User':1,
+			'group_by_no_leaf':1,'group_by':[]}
+		</field>
+	</record>
+
+	<record id="sales_team_crm_team_view_form_inherit" model="ir.ui.view">
+		<field name="name">crm.team.form.inherit</field>
+		<field name="model">crm.team</field>
+		<field name="inherit_id" ref="sales_team.crm_team_view_form" />
+		<field name="arch" type="xml">
+			<field name="user_id" position="before">
+				<field name="manager_id"></field>
+			</field>
+		</field>
+	</record>
+
+	<record id="SPT_base_view_users_form_inherit" model="ir.ui.view">
+		<field name="name">res.users.form.inherit</field>
+		<field name="model">res.users</field>
+		<field name="inherit_id" ref="base.view_users_form" />
+		<field name="arch" type="xml">
+			<field name="lang" position="after">
+				<field name="member_ids" invisible="1" widget="many2many_tags"></field>
+			</field>
+		</field>
+	</record>
+	<record id="kanban_sales_target_report_view" model="ir.ui.view">
+	 <field name="name">sales.target.kanban</field>
+	  <field name="model">sales.target</field>
+	 <field name="arch" type="xml">
+		 <kanban class="oe_background_grey o_kanban_dashboard o_salesteam_kanban" create="1" sample="1">
+			 <field name="team_leader"/>
+			 <field name="salesperson"/>
+			 <field name="monthly_target"/>
+			 <field name="target"/>
+			 <field name="achieve"/>
+			 <field name="perct_achievement"/>
+			 <templates>
+				 <t t-name="kanban-box">
+					 <div t-attf-class="o_kanban_card_header">
+						 <div class="o_kanban_card_header_title">
+							 <div class="o_primary"><field name="salesperson"/></div>
+						 </div>
+						 <div class="o_kanban_manage_button_section">
+							 <a class="o_kanban_manage_toggle_button" href="#"><i class="fa fa-ellipsis-v" role="img" aria-label="Manage" title="Manage"/></a>
+						 </div>
+					 </div>
+					 <div t-attf-class="oe_kanban_card oe_kanban_global_click">
+						 <div class="o_kanban_card_content">
+							 <span>
+								 <strong>Team Leader : </strong>
+								 <field name="team_leader" can_create="true" can_write="true" modifiers="{}"/>
+								 <br/>
+							 </span>
+							 <span>
+								 <strong>Monthly Target: </strong>
+								 <field name="monthly_target" can_create="true" can_write="true" modifiers="{}"/>
+								 <br/>
+							 </span>
+							 <span>
+								 <strong>Target: </strong>
+								 <field name="target" can_create="true" can_write="true" modifiers="{}"/>
+								 <br/>
+							 </span>
+							 <span>
+								 <strong>Achieve: </strong>
+								 <field name="achieve"/> |
+								 <field name="perct_achievement"/>
+							 </span>
+						 </div>
+						 <div class="oe_kanban_bottom_left">
+						 </div>
+						 <div class="oe_kanban_bottom_right">
+							 <img t-if="record.team_leader.raw_value" t-att-src="kanban_image('res.users', 'image_128', record.team_leader.raw_value)" t-att-title="record.team_leader.value" t-att-alt="record.team_leader.value" class="oe_kanban_avatar o_image_24_cover float-right"/>
+						 </div>
+					 </div>
+				 </t>
+			 </templates>
+		 </kanban>
+	 </field>
+	</record>
+	<record id="action_sales_target_report" model="ir.actions.act_window">
+		<field name="name">Target Analysis</field>
+		<field name="res_model">sales.target</field>
+		<field name="view_mode">kanban,tree,form</field>
+		<field name="view_id" ref="itatix_sales_person_target.kanban_sales_target_report_view"/>
+		<field name="domain">[]</field>
+		<field name="context">{'group_by': 'sales_team_id'}</field>
+		<field name="help">From this report, you can have an overview of the amount invoiced to your customer. The search tool can also be used to personalise your Invoices reports and so, match this analysis to your needs.</field>
+	</record>
+
+	<record id="crm_team_form_salestarget_inherit" model="ir.ui.view">
+		<field name="name">crm.team.kanban</field>
+		<field name="model">crm.team</field>
+		<field name="inherit_id" ref="sales_team.crm_team_salesteams_view_kanban" />
+		<field name="arch" type="xml">
+				<xpath expr="//div[hasclass('o_kanban_manage_reports')]" position="inside">
+					<div name="salestarget_report">
+						<a name="%(action_sales_target_report)d" type="action">
+							Metas de facturación
+						</a>
+					</div>
+				</xpath>
+<!--			<xpath expr="//button[@name='action_primary_channel_button']" position="after">-->
+<!--				<br/>-->
+<!--				<button type="action" class="btn btn-primary" name="%(action_sales_target_report)d">Meta de facturación</button>-->
+<!--			</xpath>-->
+		</field>
+
+
+	</record>
+
+</odoo>
