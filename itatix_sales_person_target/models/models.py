@@ -54,31 +54,95 @@ class CrmTeam(models.Model):
 
 
 class SalesTarget(models.Model):
+
     _name = "sales.target"
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = "Sales Target"
     _rec_name = 'salesperson'
     _order = 'id desc'
 
     team_leader = fields.Many2one(related='sales_team_id.user_id', store=True)
     salesperson = fields.Many2one("res.users", string="Salesperson")
-    target = fields.Float("Target")
-    monthly_target = fields.Float("Monthly Target")  # Quota/Meta de facturacion
-    achieve = fields.Float("Achieve", compute="_get_perct_achievement", store=True)
-    currency_id = fields.Many2one("res.currency", string="Currency")
+    target = fields.Float("Target", compute='_compute_monthly_target', store=True)
+    monthly_target = fields.Float("Monthly Target", compute='_compute_monthly_target', store=True)  # Quota/Meta de facturacion
+    achieve = fields.Float("Achieve", compute='_compute_monthly_target', store=True)
+    currency_id = fields.Many2one("res.currency", default=lambda self: self.env['res.currency'].search(
+        [('name', '=', 'USD')])
+                                  )
     start_date = fields.Date("From")
     end_date = fields.Date("To")
     sales = fields.Integer("Sales", compute="_get_total_sales", store=True)
-    perct_achievement = fields.Float("% Achievement", compute="_get_perct_achievement", store=True)
+    perct_achievement = fields.Float("% Achievement", compute='_compute_monthly_target', store=True)
     target_achieve = fields.Selection([('sale_order_confirm', "Sale Order Confirm"),
                                        ('delivery_order_done', 'Delivery Order Done'),
                                        ('invoice_created', 'Invoice Created'),
                                        ('invoice_paid', 'Invoice Paid')], string="Target Achieve", default="sale_order_confirm")
     sales_team_id = fields.Many2one('crm.team')
-    sales_target_lines = fields.One2many("sales.target.lines", "target_id", string="Taget Lines")
+    sales_target_lines = fields.One2many("sales.target.lines", "target_id", string="Target Lines")
+    current_year = fields.Date(copy=False)
+    gap = fields.Float(copy=False, compute='_compute_monthly_target', store=True)
 
-    def create_months(self):
-        if self.start_date:
-            current_year = self.start_date.year
+    @api.depends('sales_target_lines.monthly_target')
+    def _compute_monthly_target(self):
+        for record in self:
+            current_month = record.mapped("sales_target_lines").filtered(
+                lambda ln: ln.date_order.month == fields.Date.today().month
+                and ln.date_order.year == record.current_year.year
+            )
+            if current_month:
+                record.write({
+                    'monthly_target': current_month.monthly_target,
+                    'target': current_month.monthly_target,
+                    'achieve': current_month.monthly_target_achieve,
+                    'perct_achievement': current_month.monthly_target_achieve * 100 / (current_month.monthly_target or 1.0),
+                    'gap': current_month.monthly_target_achieve - current_month.monthly_target
+                })
+            # self.monthly_target = current_month.monthly_target
+            # self.target = current_month.monthly_target
+            # self.achieve = current_month.monthly_target_achieve
+            # self.perct_achievement = current_month.monthly_target_achieve * 100 / (current_month.monthly_target or 1.0)
+            # self.gap = current_month.monthly_target_achieve - current_month.monthly_target
+
+    @api.model
+    def create(self, vals):
+        res = super(SalesTarget, self).create(vals)
+        if res:
+            res.create_months(fields.Date.today())
+            if res.mapped("sales_target_lines"):
+                for line in res.mapped("sales_target_lines"):
+                    line.current_year = True
+            res.current_year = fields.Date.today()
+        return res
+
+    @api.onchange('current_year')
+    def _onchange_target_lines(self):
+        """
+        SE CREA EN AUTOMATICO
+        SI HAY LA FECHA DEL CURRENT YEAR, se agregara a las lineas del booleano
+        si es una fecha anterior al año en curso ¿?
+        :return:
+        """
+        if self.current_year:
+            current_year = fields.Date.today()
+            selected_dt = self.current_year
+            diff_year = self.mapped("sales_target_lines").filtered(
+                lambda ln: ln.date_order.year == selected_dt.year
+            )
+            if not diff_year:
+                self.create_months(selected_dt)
+            for line in self.mapped("sales_target_lines"):
+                if line.date_order.year == current_year.year:
+                    line.current_year = True
+                else:
+                    line.current_year = False
+                    if not self.mapped("sales_target_lines").filtered(
+                        lambda ln: ln.date_order.year == selected_dt.year
+                    ):
+                        self.create_months(selected_dt)
+
+    def create_months(self, date):
+        if date:
+            current_year = date.year
             jan = "1-1-%s" % current_year
             feb = "1-2-%s" % current_year
             march = "1-3-%s" % current_year
@@ -107,38 +171,17 @@ class SalesTarget(models.Model):
             for dt in dates:
                 end_date = "%s-%s-%s" % (monthrange(current_year, dt.month)[1],dt.month,dt.year)
                 endt = datetime.strptime(end_date, '%d-%m-%Y').date()
-                line = self.env['sales.target.lines'].search([('target_id', '=', self.id),('user_id','=', self.salesperson.id),('date_order','=', endt)])
-                if not line:
-                    line.create({
-                        'target_id': self.id,
-                        'date_order': endt,
-                        'user_id': self.salesperson.id,
-                        'currency_id': self.currency_id.id,
-                        })
+                self.env['sales.target.lines'].create({
+                    'target_id': self.id,
+                    'date_order': endt,
+                    'user_id': self.salesperson.id,
+                    'currency_id': self.currency_id.id,
+                })
 
     @api.onchange('sales_team_id')
     def _onchange_default_team_leader(self):
         if self.sales_team_id:
             self.team_leader = self.sales_team_id.user_id
-
-    # @api.depends('target')
-    # def _get_monthly_target(self):
-    #     """
-    #     Pone la meta de facturación según la fecha condicionada de START_DATE Y END_DATE
-    #     SI no tiene una meta de facturacion establecida pone automaticamente la de meta de facturacion
-    #     global de las metas de venta
-    #     :return:
-    #     """
-    #     for record in self:
-    #         if record.target:
-    #             if not record.sales_team_id.invoiced_target:
-    #                 raise UserError("Se requiere tener una meta de facturacion en el equipo de ventas")
-    #             record.monthly_target = record.sales_team_id.invoiced_target
-    #             for line in record.sales_target_lines:
-    #                 if line.date_order == record.end_date:
-    #                     line.monthly_target = record.monthly_target
-    #         else:
-    #             record.monthly_target = 0.0
             
     @api.onchange('team_leader')
     def onchange_team_leader(self):
@@ -174,8 +217,9 @@ class SalesTarget(models.Model):
     @api.depends('salesperson', 'target', 'currency_id', 'start_date', 'end_date', 'target_achieve')
     def _get_perct_achievement(self):
         for rec in self:
-            stdt = Datetime.to_string(rec.start_date)
-            endt = Datetime.to_string(rec.end_date)
+            last_days = monthrange(fields.Datetime.today().year, fields.Datetime.today().month)[1]
+            stdt = Datetime.to_string(fields.Date.today().replace(day=1))
+            endt = Datetime.to_string(fields.Date.today().replace(day=last_days))
             perct_achievement = 0.00
             achieve = 0.00
             if rec.target_achieve == 'sale_order_confirm':
@@ -345,34 +389,16 @@ class SalesTarget(models.Model):
                 stdt = dt
                 end_date = "%s-%s-%s" % (monthrange(current_year, dt.month)[1],dt.month,dt.year)
                 endt = datetime.strptime(end_date, '%d-%m-%Y').date()
-                monthly_target_achieve , monthly_target_achieve_per = self.get_perct_achievement(rec.salesperson.id,rec.monthly_target,rec.currency_id.id,stdt,endt,rec.target_achieve)
                 sales = self.get_total_sales(rec.salesperson.id,stdt,endt)
                 line = self.env['sales.target.lines'].search([('target_id','=',rec.id),('user_id','=',rec.salesperson.id),('date_order','=',endt)])
                 if line:
+                    monthly_target_achieve, monthly_target_achieve_per = self.get_perct_achievement(rec.salesperson.id,line.monthly_target,rec.currency_id.id,stdt,endt,rec.target_achieve)
                     line.write({
                         'monthly_target': line.monthly_target,
                         'currency_id': rec.currency_id.id,
                         'monthly_target_achieve': monthly_target_achieve,
                         'monthly_target_achieve_per': monthly_target_achieve_per
                     })
-                # if not line:
-                #     line.create({
-                #         'target_id': rec.id,
-                #         'date_order': endt,
-                #         'user_id': rec.salesperson.id,
-                #         'monthly_target': rec.monthly_target,
-                #         'currency_id': rec.currency_id.id,
-                #         'monthly_target_achieve': monthly_target_achieve,
-                #         'monthly_target_achieve_per' : monthly_target_achieve_per,
-                #         })
-                # else:
-                #     line = self.env['sales.target.lines'].search([('user_id','=',rec.salesperson.id),('date_order','=',endt),('target_id','=',rec.id)])
-                #     line.write({
-                #         'monthly_target': rec.monthly_target,
-                #         'currency_id': rec.currency_id.id,
-                #         'monthly_target_achieve': monthly_target_achieve,
-                #         'monthly_target_achieve_per': monthly_target_achieve_per,
-                #         })
 
 
 class SalesTargetLines(models.Model):
@@ -381,26 +407,26 @@ class SalesTargetLines(models.Model):
     _rec_name = 'user_id'
     _order = 'id desc'        
     
-    target_id = fields.Many2one("sales.target",string="Sales Target", copy=False)
+    target_id = fields.Many2one("sales.target",string="Sales Target", copy=False, ondelete='cascade')
     date_order = fields.Date("Order Date", copy=False)
-    user_id = fields.Many2one("res.users",string="Salesperson", copy=False)
+    user_id = fields.Many2one("res.users", string="Salesperson", copy=False)
     monthly_target = fields.Float("Monthly Target", copy=False)
-    currency_id = fields.Many2one("res.currency",string="Currency", copy=False)
+    currency_id = fields.Many2one("res.currency", string="Currency", copy=False)
     monthly_target_achieve = fields.Float("Monthly Target Achieved", copy=False)
-    no_of_sales = fields.Integer("Sales",compute="_get_total_sales",store=True, copy=False)
+    no_of_sales = fields.Integer("Sales",compute="_get_total_sales", store=True, copy=False)
     monthly_target_achieve_per = fields.Float("Monthly Target Achieved Percentage", copy=False)
     gap = fields.Float(copy=False)
+    current_year = fields.Boolean(copy=False)
 
     @api.depends('user_id', 'date_order')
     def _get_total_sales(self):
         for rec in self:
-            start_date = "%s-%s-%s" % (1,rec.date_order.month,rec.date_order.year)
-            start_date = datetime.strptime(start_date, '%d-%m-%Y').date()
-            stdt = Datetime.to_string(start_date)
-            endt = Datetime.to_string(rec.date_order)
-            SaleOrders = self.env['sale.order'].search([('user_id','=',rec.user_id.id),('date_order','>=',stdt)
-                                                        ,('currency_id','=',rec.target_id.currency_id.id),('date_order','<=',endt)])
+            if rec._origin:
+                start_date = "%s-%s-%s" % (1,rec.date_order.month,rec.date_order.year)
+                start_date = datetime.strptime(start_date, '%d-%m-%Y').date()
+                stdt = Datetime.to_string(start_date)
+                endt = Datetime.to_string(rec.date_order)
+                SaleOrders = self.env['sale.order'].search([('user_id','=',rec.user_id.id),('date_order','>=',stdt)
+                                                            ,('currency_id','=',rec.target_id.currency_id.id),('date_order','<=',endt)])
 
-            rec.no_of_sales = len(SaleOrders)
-    
-    
+                rec.no_of_sales = len(SaleOrders)

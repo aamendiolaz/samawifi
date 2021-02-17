@@ -50,8 +50,6 @@ class SalesTargetReport(models.Model):
     
     def _query(self, with_clause='', fields={}, groupby='', from_clause=''):
         with_ = ("WITH %s" % with_clause) if with_clause else ""
-        #SUM(l.quantity * pt.list_price * (CASE WHEN i.move_type IN ('out_invoice', 'in_invoice') THEN 1 ELSE -1 END)) AS sale_expected
-        #stl.monthly_target_achieve_per as achieve_perct,
         select_ = """
             min(stl.id) as id,
             stl.date_order as date,

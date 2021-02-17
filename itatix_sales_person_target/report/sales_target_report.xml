@@ -26,7 +26,6 @@
 				<field name="date" />
 				<filter string="Date" name="year" invisible="1" date="date"
 					default_period="this_year" />
-				
 				<separator />
 				<field name="user_id" />
 				<field name="currency_id" />
