@@ -23,6 +23,7 @@
 		<field name="model">sales.target.report</field>
 		<field name="arch" type="xml">
 			<search string="Sales Target">
+				<field name="sales_team_id"/>
 				<field name="date" />
 				<filter string="Date" name="year" invisible="1" date="date"
 					default_period="this_year" />
@@ -43,7 +44,7 @@
 		<field name="view_mode">pivot</field>
 		<field name="view_id"></field>  <!-- force empty -->
 		<field name="search_view_id" ref="view_sales_target_report_pivot_search" />
-		<field name="context">{'search_default_User':1}</field>
+		<field name="context">{'group_by': 'sales_team_id'}</field>
 	</record>
 
 	<menuitem id="menu_view_sales_target_report_pivot" action="action_view_sales_target_report_pivot"

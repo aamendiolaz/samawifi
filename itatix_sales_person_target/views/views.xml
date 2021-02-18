@@ -155,6 +155,10 @@
 			<field name="user_id" position="before">
 				<field name="manager_id"/>
 			</field>
+			<xpath expr="//field[@name='invoiced_target']" position="attributes">
+				<attribute name="attrs">{}</attribute>
+				<attribute name="invisible">1</attribute>
+			</xpath>
 		</field>
 	</record>
 
@@ -230,29 +234,36 @@
 		<field name="view_mode">kanban,tree,form</field>
 		<field name="view_id" ref="itatix_sales_person_target.kanban_sales_target_report_view"/>
 		<field name="domain">[]</field>
-		<field name="context">{'group_by': 'sales_team_id'}</field>
+		<field name="context">{'group_by': 'sales_team_id','search_default_team_id': [active_id]}</field>
 		<field name="help">From this report, you can have an overview of the amount invoiced to your customer. The search tool can also be used to personalise your Invoices reports and so, match this analysis to your needs.</field>
 	</record>
+	<record id="action_view_sales_target_report_crm_pivot" model="ir.actions.act_window">
+		<field name="name">Sales Target</field>
+		<field name="res_model">sales.target.report</field>
+		<field name="view_mode">pivot</field>
+		<field name="view_id"></field>  <!-- force empty -->
+		<field name="search_view_id" ref="view_sales_target_report_pivot_search" />
+		<field name="context">{'group_by': 'sales_team_id','search_default_sales_team_id': [active_id]}</field>
+	</record>
 
-<!--	<record id="crm_team_form_salestarget_inherit" model="ir.ui.view">-->
-<!--		<field name="name">crm.team.kanban</field>-->
-<!--		<field name="model">crm.team</field>-->
-<!--		<field name="inherit_id" ref="sales_team.crm_team_salesteams_view_kanban" />-->
-<!--		<field name="arch" type="xml">-->
-<!--				<xpath expr="//div[hasclass('o_kanban_manage_reports')]" position="inside">-->
-<!--					<div name="salestarget_report">-->
-<!--						<a name="%(action_sales_target_report)d" type="action">-->
-<!--							Metas de facturación-->
-<!--						</a>-->
-<!--					</div>-->
-<!--				</xpath>-->
-<!--&lt;!&ndash;			<xpath expr="//button[@name='action_primary_channel_button']" position="after">&ndash;&gt;-->
-<!--&lt;!&ndash;				<br/>&ndash;&gt;-->
-<!--&lt;!&ndash;				<button type="action" class="btn btn-primary" name="%(action_sales_target_report)d">Meta de facturación</button>&ndash;&gt;-->
-<!--&lt;!&ndash;			</xpath>&ndash;&gt;-->
-<!--		</field>-->
+	<record id="crm_team_form_salestarget_inherit" model="ir.ui.view">
+		<field name="name">crm.team.kanban</field>
+		<field name="model">crm.team</field>
+		<field name="inherit_id" ref="sales_team.crm_team_salesteams_view_kanban" />
+		<field name="arch" type="xml">
+				<xpath expr="//div[hasclass('o_kanban_manage_reports')]" position="inside">
+					<a name="%(action_view_sales_target_report_crm_pivot)d" type="action">
+							Meta de facturación
+					</a>
+				</xpath>
+			<xpath expr="//div[hasclass('o_kanban_manage_view')]" position="inside">
+				<a name="%(action_sales_target_report)d" type="action">
+							Meta de facturacion
+				</a>
+			</xpath>
+		</field>
 
 
-<!--	</record>-->
+	</record>
 
 </odoo>
