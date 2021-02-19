@@ -146,7 +146,7 @@ class SalesTarget(models.Model):
             current_year = fields.Date.today()
             selected_dt = self.current_year
             diff_year = self.mapped("sales_target_lines").filtered(
-                lambda ln: ln.date_order.year == selected_dt.year
+                lambda ln: ln.date_order.year != selected_dt.year
             )
             if diff_year:
                 self.create_months(selected_dt)
