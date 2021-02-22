@@ -27,6 +27,52 @@
 				<field name="date" />
 				<filter string="Date" name="year" invisible="1" date="date"
 					default_period="this_year" />
+
+				<filter string="January" name="jan" domain="[
+				('date','&gt;',(context_today()-relativedelta(month=1)).strftime('%%Y-%%m-01')),
+				('date','&lt;',time.strftime('%%Y-%%m-28'))
+				]"/>
+				<filter string="February" name="feb" domain="[
+				('date','&gt;',(context_today()+relativedelta(month=2)).strftime('%%Y-%%m-01')),
+				('date','&lt;',(context_today()+relativedelta(month=3)).strftime('%%Y-%%m-01'))
+				]"/>
+				<filter string="March" name="mar" domain="[
+				('date','&gt;',(context_today()+relativedelta(month=3)).strftime('%%Y-%%m-01')),
+				('date','&lt;',(context_today()+relativedelta(month=4)).strftime('%%Y-%%m-01'))
+				]"/>
+				<filter string="April" name="apr" domain="[
+				('date','&gt;',(context_today()+relativedelta(month=4)).strftime('%%Y-%%m-01')),
+				('date','&lt;',(context_today()+relativedelta(month=5)).strftime('%%Y-%%m-01'))
+				]"/>
+				<filter string="May" name="may" domain="[
+				('date','&gt;',(context_today()+relativedelta(month=5)).strftime('%%Y-%%m-01')),
+				('date','&lt;',(context_today()+relativedelta(month=6)).strftime('%%Y-%%m-01'))
+				]"/>
+				<filter string="Jun" name="jun" domain="[
+				('date','&gt;',(context_today()+relativedelta(month=6)).strftime('%%Y-%%m-01')),
+				('date','&lt;',(context_today()+relativedelta(month=7)).strftime('%%Y-%%m-01'))
+				]"/>
+				<filter string="July" name="jul" domain="[
+				('date','&gt;',(context_today()+relativedelta(month=7)).strftime('%%Y-%%m-01')),
+				('date','&lt;',(context_today()+relativedelta(month=8)).strftime('%%Y-%%m-01'))
+				]"/>
+				<filter string="August" name="aug" domain="[
+				('date','&gt;',(context_today()+relativedelta(month=8)).strftime('%%Y-%%m-01')),
+				('date','&lt;',(context_today()+relativedelta(month=9)).strftime('%%Y-%%m-01'))
+				]"/>
+				<filter string="September" name="sep" domain="[
+				('date','&gt;',(context_today()+relativedelta(month=9)).strftime('%%Y-%%m-01')),
+				('date','&lt;',(context_today()+relativedelta(month=10)).strftime('%%Y-%%m-01'))
+				]"/>
+				<filter string="October" name="oct" domain="[
+				('date','&gt;',(context_today()+relativedelta(month=10)).strftime('%%Y-%%m-01')),
+				('date','&lt;',(context_today()+relativedelta(month=11)).strftime('%%Y-%%m-01'))
+				]"/>
+				<filter string="November" name="nov" domain="[
+				('date','&gt;',(context_today()+relativedelta(month=11)).strftime('%%Y-%%m-01')),
+				('date','&lt;',(context_today()+relativedelta(month=12)).strftime('%%Y-%%m-01'))
+				]"/>
+				<filter string="December" name="dec" domain="[('date','&gt;',(context_today()+relativedelta(month=12)).strftime('%Y-%m-01'))]"/>
 				<separator />
 				<field name="user_id" />
 				<field name="currency_id" />

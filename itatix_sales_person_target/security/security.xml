@@ -18,7 +18,7 @@
 	<record id="group_team_leader" model="res.groups">
 		<field name="name">Sales Team Leader</field>
 	</record>
-	
+
 <!--	<record id="sale_target_report_view_rule_salesperson" model="ir.rule">-->
 <!--		<field name="name">Sales Person View Rule for Sales Target Report</field>-->
 <!--		<field name="model_id" ref="itatix_sales_person_target.model_sales_target_report" />-->
@@ -64,5 +64,5 @@
 <!--        <field name="perm_unlink" eval="0"/>-->
 <!--        <field name="perm_read" eval="1"/>-->
 <!--	</record>-->
-	
+
 </odoo>

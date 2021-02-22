@@ -7,7 +7,7 @@
 			<tree create="false" editable="bottom" delete="false">
 				<field name="date_order" readonly="1" force_save="1"/>
 				<field name="user_id" readonly="1" force_save="1"/>
-				<field name="monthly_target" string="Quota"/>
+				<field name="monthly_target" string="Quota" readonly="1" force_save="1"/>
 				<field name="currency_id" readonly="1" force_save="1"/>
 				<field name="monthly_target_achieve" readonly="1" force_save="1"/>
 				<field name="current_year" readonly="1" force_save="1"/>
@@ -17,12 +17,23 @@
 			</tree>
 		</field>
 	</record>
+	<record id="sales_target_lines_view_tree" model="ir.ui.view">
+	    <field name="name">sales.target.lines_view_tree_inherit</field>
+	    <field name="model">sales.target.lines</field>
+	    <field name="inherit_id" ref="itatix_sales_person_target.sale_target_lines_view_tree"/>
+		<field name="groups_id" eval="[(4, ref('itatix_sales_person_target.group_team_leader'))]"/>
+	    <field name="arch" type="xml">
+	        <xpath expr="//field[@name='monthly_target']" position="attributes">
+				<attribute name="readonly">False</attribute>
+	        </xpath>
+	    </field>
+	</record>
 	<record id="action_sales_target_lines" model="ir.actions.act_window">
 		<field name="name">Target Lines</field>
 		<field name="res_model">sales.target.lines</field>
 		<field name="view_mode">tree</field>
 		<field name="view_id" ref="itatix_sales_person_target.sale_target_lines_view_tree"/>
-		<field name="domain">[]</field>
+		<field name="domain">[('target_id','=', active_id)]</field>
 		<field name="context">{'search_default_current_year':1}</field>
 		<field name="target">new</field>
 	</record>
@@ -37,12 +48,13 @@
 	    	</search>
 	   </field>
 	</record>
+
 	<!-- Sales Target Form View -->
 	<record id="sales_target_form_view" model="ir.ui.view">
 		<field name="name">sales.target.form.view</field>
 		<field name="model">sales.target</field>
 		<field name="arch" type="xml">
-			<form>
+			<form edit="false" create="false">
 				<sheet>
 					<div class="oe_button_box" name="button_box">
 						<button string="Target Lines" class="oe_stat_button oe_read_only" icon="fa-list" name="%(action_sales_target_lines)d" type="action"/>
@@ -87,7 +99,19 @@
 			</form>
 		</field>
 	</record>
-
+<!-- Inherit Form View to Modify it -->
+	<record id="sales_target_form_inherit_view" model="ir.ui.view">
+		<field name="name">sales.target.form.inherit</field>
+		<field name="model">sales.target</field>
+		<field name="inherit_id" ref="itatix_sales_person_target.sales_target_form_view"/>
+		<field name="groups_id" eval="[(4, ref('itatix_sales_person_target.group_team_leader'))]"/>
+		<field name="arch" type="xml">
+			<xpath expr="//form[1]" position="attributes">
+				<attribute name="create">true</attribute>
+				<attribute name="edit">true</attribute>
+			</xpath>
+		</field>
+	</record>
 	<!-- Sales Target Tree View -->
 	<record id="sales_target_tree_view" model="ir.ui.view">
 		<field name="name">sale.target.tree.view</field>
@@ -118,16 +142,13 @@
 
 	<!-- Sales Target Menuitem -->
 	<menuitem id="menu_sales_target" parent="sale.sale_order_menu"
-		sequence="10" action="sales_target_action"
-		groups="sales_team.group_sale_manager,itatix_sales_person_target.group_team_leader" />
+		sequence="10" action="sales_target_action"/>
 
 	<menuitem id="sale.sale_order_menu" name="Configuration"
-		parent="sale.sale_menu_root" sequence="6"
-		groups="sales_team.group_sale_manager,itatix_sales_person_target.group_team_leader" />
+		parent="sale.sale_menu_root" sequence="6"/>
 
 	<menuitem id="sale.menu_sale_report" name="Reporting"
-		parent="sale.sale_menu_root" sequence="5"
-		groups="sales_team.group_sale_manager,sales_team.group_sale_salesman" />
+		parent="sale.sale_menu_root" sequence="5"/>
 
 	<record id="sale_view_order_product_search_inherit" model="ir.ui.view">
 		<field name="name">sale.report.search.inherit</field>

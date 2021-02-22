@@ -28,6 +28,32 @@ class CrmTeam(models.Model):
     
     manager_id = fields.Many2one('res.users', string="Sales Manager")
 
+    def _compute_quotations_to_invoice(self):
+        query = self.env['sale.order']._where_calc([
+            ('team_id', 'in', self.ids),
+            ('state', 'in', ['draft', 'sent']),
+        ])
+        self.env['sale.order']._apply_ir_rules(query, 'read')
+        _, where_clause, where_clause_args = query.get_sql()
+        select_query = """
+            SELECT team_id, count(*), sum(amount_total
+            ) as amount_total
+            FROM sale_order
+            WHERE %s
+            GROUP BY team_id
+        """ % where_clause
+        self.env.cr.execute(select_query, where_clause_args)
+        quotation_data = self.env.cr.dictfetchall()
+        teams = self.browse()
+        for datum in quotation_data:
+            team = self.browse(datum['team_id'])
+            team.quotations_amount = datum['amount_total']
+            team.quotations_count = datum['count']
+            teams |= team
+        remaining = (self - teams)
+        remaining.quotations_amount = 0
+        remaining.quotations_count = 0
+
     def view_sales_target(self):
         return {
             'name': _('Sales Target View'),
@@ -427,7 +453,7 @@ class SalesTargetLines(models.Model):
     _rec_name = 'user_id'
     _order = 'id desc'        
     
-    target_id = fields.Many2one("sales.target",string="Sales Target", copy=False, ondelete='cascade')
+    target_id = fields.Many2one("sales.target", string="Sales Target", copy=False, index=True, ondelete='cascade')
     date_order = fields.Date("Order Date", copy=False)
     user_id = fields.Many2one("res.users", string="Salesperson", copy=False)
     monthly_target = fields.Float("Monthly Target", copy=False)
