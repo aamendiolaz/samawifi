@@ -120,11 +120,24 @@ class SalesTarget(models.Model):
     target_achieve = fields.Selection([('sale_order_confirm', "Sale Order Confirm"),
                                        ('delivery_order_done', 'Delivery Order Done'),
                                        ('invoice_created', 'Invoice Created'),
-                                       ('invoice_paid', 'Invoice Paid')], string="Target Achieve", default="sale_order_confirm")
+                                       ('invoice_paid', 'Invoice Paid')], string="Target Achieve", default="invoice_created")
     sales_team_id = fields.Many2one('crm.team')
     sales_target_lines = fields.One2many("sales.target.lines", "target_id", string="Target Lines")
     current_year = fields.Date(copy=False)
     gap = fields.Float(copy=False, compute='_compute_monthly_target', store=True)
+    total_target = fields.Float(copy=False, string="Teams Quota", compute='_compute_quota_sales_team', store=True)
+
+    @api.depends('sales_team_id', 'sales_target_lines.monthly_target')
+    def _compute_quota_sales_team(self):
+        for record in self:
+            if record.sales_team_id:
+                target_ids = record.env['sales.target'].search([('sales_team_id', '=', record.sales_team_id.id)])
+                quota = 0.0
+                if target_ids:
+                    for st in target_ids:
+                        quota += st.target
+                record.sales_team_id.invoiced_target = quota
+                record.total_target = quota
 
     @api.depends('sales_target_lines.monthly_target')
     def _compute_monthly_target(self):
@@ -243,11 +256,13 @@ class SalesTarget(models.Model):
         for rec in self:
             stdt = Datetime.to_string(rec.start_date)
             endt = Datetime.to_string(rec.end_date)
-            SaleOrders = self.env['sale.order'].search(
-                [('user_id','=',rec.salesperson.id),
-                 ('date_order','>=',stdt),
-                 ('currency_id','=',rec.currency_id.id),
-                 ('date_order','<=',endt)])
+            SaleOrders = self.env['account.move'].search(
+                [('user_id', '=', rec.salesperson.id),
+                 ('create_date', '>=', stdt),
+                 ('currency_id', '=', rec.currency_id.id),
+                 ('create_date', '<=', endt),
+                 ('state', '=', 'posted'),
+                 ('move_type', '=', 'out_invoice')])
             rec.sales = len(SaleOrders)
     
     @api.model
@@ -264,8 +279,8 @@ class SalesTarget(models.Model):
     def _get_perct_achievement(self):
         for rec in self:
             last_days = monthrange(fields.Datetime.today().year, fields.Datetime.today().month)[1]
-            stdt = Datetime.to_string(fields.Date.today().replace(day=1))
-            endt = Datetime.to_string(fields.Date.today().replace(day=last_days))
+            stdt = Datetime.to_string(fields.Datetime.today().replace(day=1))
+            endt = Datetime.to_string(fields.Datetime.today().replace(day=last_days))
             perct_achievement = 0.00
             achieve = 0.00
             if rec.target_achieve == 'sale_order_confirm':
@@ -289,7 +304,7 @@ class SalesTarget(models.Model):
                     picking_ids = self.env['stock.picking'].search([('origin','=',sale.name)])
                     delivery = [True if any(p.state =='done' for p in picking_ids) else False]
                     if delivery[0] == True:
-                        total_amount += sale.amount_total 
+                        total_amount += sale.amount_total
                 if total_amount < rec.target:
                     perct_achievement = (total_amount / rec.target or 1 ) * 100
                 if rec.target != 0.00 and total_amount >= rec.target:
@@ -298,13 +313,17 @@ class SalesTarget(models.Model):
                     perct_achievement = 0
                 achieve = total_amount
             if rec.target_achieve == 'invoice_created':
-                SaleOrders = self.env['sale.order'].search([('user_id','=',rec.salesperson.id),('currency_id','=',rec.currency_id.id),
-                                                            ('date_order','>=',stdt),('date_order','<=',endt)])
+                MoveOrders = self.env['account.move'].search([
+                    ('invoice_user_id', '=', rec.salesperson.id),
+                     ('currency_id', '=', rec.currency_id.id),
+                    ('create_date', '>=', stdt),
+                    ('create_date', '<=', endt),
+                    ('state', '=', 'posted'),
+                    ('move_type', '=', 'out_invoice')
+                ])
                 total_amount = 0.00
-                for sale in SaleOrders:
-                    invoice = [True if sale.invoice_ids else False]
-                    if invoice[0] == True:
-                        total_amount += sale.amount_total 
+                for move in MoveOrders:
+                    total_amount += move.amount_untaxed
                 if total_amount < rec.target:
                     perct_achievement = (total_amount / rec.target or 1 ) * 100
                 if rec.target != 0.00 and total_amount >= rec.target:
@@ -365,13 +384,17 @@ class SalesTarget(models.Model):
                 perct_achievement = 0
             achieve = total_amount
         if target_achieve == 'invoice_created':
-            SaleOrders = self.env['sale.order'].search([('user_id','=',salesperson),('currency_id','=',currency_id),
-                                                        ('date_order','>=',stdt),('date_order','<=',endt)])
+            move_ids = self.env['account.move'].search([
+                ('invoice_user_id', '=', salesperson),
+                ('currency_id', '=', currency_id),
+                ('create_date', '>=', stdt),
+                ('create_date', '<=', endt),
+                ('state', '=', 'posted'),
+                ('move_type', '=', 'out_invoice')
+            ])
             total_amount = 0.00
-            for sale in SaleOrders:
-                invoice = [True if sale.invoice_ids else False]
-                if invoice[0] == True:
-                    total_amount += sale.amount_total 
+            for move in move_ids:
+                total_amount += move.amount_untaxed
             if total_amount < target:
                 perct_achievement = (total_amount / target or 1 ) * 100
             if target != 0.00 and total_amount >= target:
@@ -396,12 +419,18 @@ class SalesTarget(models.Model):
             achieve = total_amount
         return  achieve,perct_achievement
     
-    def get_total_sales(self,salesperson,start_date,end_date):
+    def get_total_sales(self, salesperson, start_date, end_date):
         stdt = Datetime.to_string(start_date)
         endt = Datetime.to_string(end_date)
-        SaleOrders = self.env['sale.order'].search([('user_id','=',salesperson),('date_order','>=',stdt)
-                                                    ,('currency_id','=',self.currency_id.id),('date_order','<=',endt)])
-        return len(SaleOrders)
+        BillingOrders = self.env['account.move'].search([
+            ('invoice_user_id', '=', salesperson),
+            ('create_date', '>=', stdt),
+            ('currency_id', '=', self.currency_id.id),
+            ('create_date', '<=', endt),
+            ('move_type', '=', 'out_invoice'),
+            ('state', '=', 'posted')
+        ])
+        return len(BillingOrders)
             
     def _get_sales_target_lines(self):
         current_year = datetime.now().year
@@ -459,7 +488,7 @@ class SalesTargetLines(models.Model):
     monthly_target = fields.Float("Monthly Target", copy=False)
     currency_id = fields.Many2one("res.currency", string="Currency", copy=False)
     monthly_target_achieve = fields.Float("Monthly Target Achieved", copy=False)
-    no_of_sales = fields.Integer("Sales",compute="_get_total_sales", store=True, copy=False)
+    no_of_sales = fields.Integer("Billing Sales",compute="_get_total_sales", store=True, copy=False)
     monthly_target_achieve_per = fields.Float("Monthly Target Achieved Percentage", copy=False)
     gap = fields.Float(copy=False)
     current_year = fields.Boolean(copy=False)
@@ -468,11 +497,17 @@ class SalesTargetLines(models.Model):
     def _get_total_sales(self):
         for rec in self:
             if rec._origin:
-                start_date = "%s-%s-%s" % (1,rec.date_order.month,rec.date_order.year)
+                start_date = "%s-%s-%s" % (1, rec.date_order.month,rec.date_order.year)
                 start_date = datetime.strptime(start_date, '%d-%m-%Y').date()
                 stdt = Datetime.to_string(start_date)
                 endt = Datetime.to_string(rec.date_order)
-                SaleOrders = self.env['sale.order'].search([('user_id','=',rec.user_id.id),('date_order','>=',stdt)
-                                                            ,('currency_id','=',rec.target_id.currency_id.id),('date_order','<=',endt)])
+                BillingOrders = self.env['account.move'].search([
+                    ('user_id', '=', rec.user_id.id),
+                    ('create_date', '>=', stdt),
+                    ('currency_id', '=', rec.target_id.currency_id.id),
+                    ('create_date', '<=', endt),
+                    ('state', '=', 'posted'),
+                    ('move_type', '=', 'out_invoice')
+                ])
 
-                rec.no_of_sales = len(SaleOrders)
+                rec.no_of_sales = len(BillingOrders)

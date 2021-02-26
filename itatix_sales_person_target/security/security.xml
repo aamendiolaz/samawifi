@@ -1,68 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-<!--	<record id="sale_ana_report_view_rule_salesperson" model="ir.rule">-->
-<!--		<field name="name">Sales Person View Rule for Sales Analysis Report-->
-<!--		</field>-->
-<!--		<field name="model_id" ref="sale.model_sale_report" />-->
-<!--		<field name="groups" eval="[(4, ref('sales_team.group_sale_salesman'))]" />-->
-<!--		<field name="domain_force">[('user_id', '=', user.id)]</field>-->
-<!--	</record>-->
-
-<!--	<record id="sale_ana_report_view_rule_admin" model="ir.rule">-->
-<!--		<field name="name">Admin View Rule for Sales Analysis Report</field>-->
-<!--		<field name="model_id" ref="sale.model_sale_report" />-->
-<!--		<field name="groups" eval="[(4, ref('sales_team.group_sale_manager'))]" />-->
-<!--		<field name="domain_force">[(1, '=', 1)]</field>-->
-<!--	</record>-->
-<!--	-->
+	<record id="group_sales_target_only_read" model="res.groups">
+		<field name="name">Sales Target Readonly</field>
+	</record>
 	<record id="group_team_leader" model="res.groups">
 		<field name="name">Sales Team Leader</field>
 	</record>
-
-<!--	<record id="sale_target_report_view_rule_salesperson" model="ir.rule">-->
-<!--		<field name="name">Sales Person View Rule for Sales Target Report</field>-->
-<!--		<field name="model_id" ref="itatix_sales_person_target.model_sales_target_report" />-->
-<!--		<field name="groups" eval="[(4, ref('sales_team.group_sale_salesman'))]" />-->
-<!--		<field name="domain_force">[('user_id', '=', user.id)]</field>-->
-<!--	</record>-->
-<!--	-->
-<!--	<record id="sale_target_report_view_rule_admin" model="ir.rule">-->
-<!--		<field name="name">Admin View Rule for Sales Target Report</field>-->
-<!--		<field name="model_id" ref="itatix_sales_person_target.model_sales_target_report" />-->
-<!--		<field name="groups" eval="[(4, ref('sales_team.group_sale_manager'))]" />-->
-<!--		<field name="domain_force">[(1, '=', 1)]</field>-->
-<!--	</record>-->
-<!--	-->
-<!--	<record id="sale_target_report_view_rule_team_leader" model="ir.rule">-->
-<!--		<field name="name">Sales Person View Rule for Sales Team Leader for Sales Target Report</field>-->
-<!--		<field name="model_id" ref="itatix_sales_person_target.model_sales_target_report" />-->
-<!--		<field name="groups" eval="[(4, ref('group_team_leader'))]" />-->
-<!--		<field name="domain_force">[('user_id', 'in', user.member_ids.ids)]</field>-->
-<!--	</record>-->
-<!--	-->
-<!--	<record id="sale_target_view_rule_admin" model="ir.rule">-->
-<!--		<field name="name">Admin View Rule for Sales Target</field>-->
-<!--		<field name="model_id" ref="sale.model_sale_report" />-->
-<!--		<field name="groups" eval="[(4, ref('sales_team.group_sale_manager'))]" />-->
-<!--		<field name="domain_force">[(1, '=', 1)]</field>-->
-<!--	</record>-->
-<!--	-->
-<!--	<record id="sale_target_view_rule_team_leader" model="ir.rule">-->
-<!--		<field name="name">Sales Team Leader View Rule For Sales Target</field>-->
-<!--		<field name="model_id" ref="itatix_sales_person_target.model_sales_target" />-->
-<!--		<field name="groups" eval="[(4, ref('itatix_sales_person_target.group_team_leader'))]" />-->
-<!--		<field name="domain_force">[('salesperson', 'in', user.member_ids.ids)]</field>-->
-<!--	</record>-->
-<!--	-->
-<!--	<record id="sale_target_view_rule_salesperson" model="ir.rule">-->
-<!--		<field name="name">Sales Person View Rule for Sales Target</field>-->
-<!--		<field name="model_id" ref="sale.model_sale_report" />-->
-<!--		<field name="groups" eval="[(4, ref('sales_team.group_sale_salesman'))]" />-->
-<!--		<field name="domain_force">[('user_id', '=', user.id)]</field>-->
-<!--		<field name="perm_create" eval="0"/>-->
-<!--        <field name="perm_write" eval="0"/>-->
-<!--        <field name="perm_unlink" eval="0"/>-->
-<!--        <field name="perm_read" eval="1"/>-->
-<!--	</record>-->
+	<record id="sale_target_view_rule_team_leader" model="ir.rule">
+		<field name="name">Sales Team Leader View Rule For Sales Target</field>
+		<field name="model_id" ref="itatix_sales_person_target.model_sales_target" />
+		<field name="groups" eval="[(4, ref('itatix_sales_person_target.group_sales_target_only_read'))]" />
+		<field name="domain_force">[('salesperson', '=', user.id)]</field>
+	</record>
 
 </odoo>

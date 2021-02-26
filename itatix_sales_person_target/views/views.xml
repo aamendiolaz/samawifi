@@ -133,22 +133,6 @@
 		</field>
 	</record>
 
-	<!-- Sales Target Action -->
-	<record id="sales_target_action" model="ir.actions.act_window">
-		<field name="name">Sales Target</field>
-		<field name="res_model">sales.target</field>
-		<field name="view_mode">tree,form</field>
-	</record>
-
-	<!-- Sales Target Menuitem -->
-	<menuitem id="menu_sales_target" parent="sale.sale_order_menu"
-		sequence="10" action="sales_target_action"/>
-
-	<menuitem id="sale.sale_order_menu" name="Configuration"
-		parent="sale.sale_menu_root" sequence="6"/>
-
-	<menuitem id="sale.menu_sale_report" name="Reporting"
-		parent="sale.sale_menu_root" sequence="5"/>
 
 	<record id="sale_view_order_product_search_inherit" model="ir.ui.view">
 		<field name="name">sale.report.search.inherit</field>
@@ -177,8 +161,8 @@
 				<field name="manager_id"/>
 			</field>
 			<xpath expr="//field[@name='invoiced_target']" position="attributes">
-				<attribute name="attrs">{}</attribute>
-				<attribute name="invisible">1</attribute>
+				<attribute name="readonly">1</attribute>
+				<attribute name="force_save">1</attribute>
 			</xpath>
 		</field>
 	</record>
@@ -200,9 +184,9 @@
 		 <kanban class="oe_background_grey o_kanban_dashboard o_salesteam_kanban" create="0" sample="1">
 			 <field name="team_leader"/>
 			 <field name="salesperson"/>
-			 <field name="monthly_target"/>
-			 <field name="target"/>
+			 <field name="monthly_target" string="Quota"/>
 			 <field name="achieve"/>
+			 <field name="gap"/>
 			 <field name="perct_achievement"/>
 			 <templates>
 				 <t t-name="kanban-box">
@@ -222,13 +206,18 @@
 								 <br/>
 							 </span>
 							 <span>
-								 <strong>Monthly Target: </strong>
+								 <strong>Quota: </strong>
 								 <field name="monthly_target" can_create="true" can_write="true" modifiers="{}"/>
 								 <br/>
 							 </span>
 							 <span>
-								 <strong>Target: </strong>
-								 <field name="target" can_create="true" can_write="true" modifiers="{}"/>
+								 <strong>Gap: </strong>
+								 <field name="gap" can_create="true" can_write="true" modifiers="{}"/>
+								 <br/>
+							 </span>
+							 <span>
+								 <strong>Teams Quota:</strong>
+								 <field name="total_target"/>
 								 <br/>
 							 </span>
 							 <span>
@@ -253,11 +242,30 @@
 	<record id="action_sales_target_report" model="ir.actions.act_window">
 		<field name="name">Target Analysis</field>
 		<field name="res_model">sales.target</field>
-		<field name="view_mode">kanban,tree,form</field>
-		<field name="view_id" ref="itatix_sales_person_target.kanban_sales_target_report_view"/>
-		<field name="domain">[]</field>
+		<field name="view_mode">tree,kanban,form</field>
+		<field name="view_id" ref="itatix_sales_person_target.sales_target_tree_view"/>
+		<field name="domain">[('sales_team_id','=', active_id)]</field>
 		<field name="context">{'group_by': 'sales_team_id','search_default_team_id': [active_id]}</field>
 		<field name="help">From this report, you can have an overview of the amount invoiced to your customer. The search tool can also be used to personalise your Invoices reports and so, match this analysis to your needs.</field>
 	</record>
 
+	<!-- Sales Target Action -->
+	<record id="sales_target_action" model="ir.actions.act_window">
+		<field name="name">Sales Target</field>
+		<field name="res_model">sales.target</field>
+		<field name="view_mode">tree,form,kanban</field>
+		<field name="view_id" ref="itatix_sales_person_target.sales_target_tree_view"/>
+		<field name="domain">[]</field>
+		<field name="context">{'group_by': 'sales_team_id'}</field>
+	</record>
+
+	<!-- Sales Target Menuitem -->
+	<menuitem id="menu_sales_target" parent="sale.sale_order_menu"
+			  sequence="10" action="sales_target_action"/>
+
+	<menuitem id="sale.sale_order_menu" name="Configuration"
+			  parent="sale.sale_menu_root" sequence="6"/>
+
+	<menuitem id="sale.menu_sale_report" name="Reporting"
+			  parent="sale.sale_menu_root" sequence="5"/>
 </odoo>

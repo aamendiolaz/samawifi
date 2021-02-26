@@ -18,25 +18,20 @@ class SalesTargetReport(models.Model):
     currency_id = fields.Many2one('res.currency', 'Currency', readonly=True)
     gap = fields.Float(readonly=True)
     achieve_total = fields.Float('Achieve', readonly=True)
-    sales = fields.Integer("Sales", readonly=True)
-    achieve_perct = fields.Float('Achievement %', readonly=True)
+    sales = fields.Integer("Invoicing", readonly=True)
+    achieve_perct = fields.Float('Achievement %',  group_operator="avg", readonly=True)
 
-    # @api.model
-    # def read_group(self, domain, fields, groupby, offset=0, limit=None, orderby=False, lazy=True):
-    #     res = super(SalesTargetReport, self).read_group(domain, fields, groupby, offset=offset, limit=limit, orderby=orderby, lazy=lazy)
-    #     groupby = [groupby] if isinstance(groupby, str) else groupby
-    #     if res and 'date:month' in groupby:
-    #         for record in res:
-    #             if record['target'] == 0.0:
-    #                 record['target'] = False
-    #             if record['achieve_total'] == 0.0:
-    #                 record['achieve_total'] = False
-    #     if res and 'user_id' in groupby:
-    #         for record in res:
-    #             record['target'] = False
-    #             if record['achieve_total'] == 0.0:
-    #                 record['achieve_total'] = False
-    #     return res
+    @api.model
+    def read_group(self, domain, fields, groupby, offset=0, limit=None, orderby=False, lazy=True):
+        res = super(SalesTargetReport, self).read_group(domain, fields, groupby, offset=offset, limit=limit, orderby=orderby, lazy=lazy)
+        groupby = [groupby] if isinstance(groupby, str) else groupby
+        if not groupby:
+            for record in res:
+                if record['target']:
+                    record['achieve_perct'] = record['achieve_total'] * 100 / record['target']
+                else:
+                    record['achieve_perct'] = record['achieve_total'] or 1.0 / 1.0
+        return res
 
     @api.model
     def fields_view_get(self, view_id=None, view_type='form', toolbar=False, submenu=False):
