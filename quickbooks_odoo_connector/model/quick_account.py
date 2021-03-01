@@ -94,7 +94,7 @@ class quickbook_acount(models.Model):
             reconcile = False
             if 'Name' in rec:
                 name = rec['Name']
-                code = self.env['ir.sequence'].next_by_code('account.account')
+                code = rec['AcctNum'] if rec.get('AcctNum') else self.env['ir.sequence'].next_by_code('account.account')
             else:
                 name = False
                 code = False
