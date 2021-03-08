@@ -56,7 +56,8 @@ class quickbook_employee(models.Model):
         method = '/query?query=select%20ID%20from%20'
         if not record_id:
             data = headeroauth.get(backend.location + backend.company_id +
-                                   method + arguments + '&minorversion=4', headers=headers)
+                                   method + arguments + '%20STARTPOSITION%20' + str(
+                filters['count']) + '%20MAXRESULTS%20' + str(300) + '&minorversion=4', headers=headers)
         else:
             data = headeroauth.get(backend.location + backend.company_id +
                                    '/' + arguments + '/' + str(record_id) + '?minorversion=4', headers=headers)
