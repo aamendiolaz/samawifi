@@ -207,7 +207,7 @@ class quickbook_department(models.Model):
             parent_id = rec['ParentRef']['value']
             values = self.get_ids(arguments, backend_id,
                                   filters, record_id=int(parent_id))
-            if values:'%20STARTPOSITION%20' + str(filters['count']) + '%20MAXRESULTS%20' + str(300) +
+            if values:
                 self.department_import_mapper(backend_id, data=values)
 
     @api.model
