@@ -13,7 +13,7 @@
           </xpath>
           <xpath expr="//field[@name='note']" position="after"  >
               <group>
-                <field name="backend_id" required="1"/>
+                <field name="backend_id"/>
                  <field name="quickbook_id"/>
               </group>
           </xpath>
@@ -35,7 +35,7 @@
             <xpath expr="//notebook" position="before">
                <group >
                   <field name="payment_type"/>     
-                  <field name="backend_id" required="1"/>
+                  <field name="backend_id"/>
                   <field name="quickbook_id"/>
                </group>
             </xpath> 
@@ -54,7 +54,7 @@
             </sheet>
             <xpath expr="//group" position="inside">
                <group >            
-                  <field name="backend_id" required="1"/>
+                  <field name="backend_id"/>
                   <field name="quickbook_id"/>
                </group>
             </xpath> 

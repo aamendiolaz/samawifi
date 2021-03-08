@@ -27,7 +27,7 @@
                </xpath>
                <xpath expr="//page/group" position="inside">
                   <group>
-                     <field name="backend_id" required="1"/>
+                     <field name="backend_id"/>
                      <field name="quickbook_id"/>
                   </group>
                </xpath>

@@ -110,14 +110,13 @@ class quickbook_acount_term(models.Model):
 
                 if rec['Type'] == 'DATE_DRIVEN':
                     value = 'balance'
-                    option = 'last_day_following_month'
-                    duedate = 0
+                    option = 'day_current_month'
+                    duedate =  int(rec['DayOfMonthDue']) if rec.get('DayOfMonthDue') else 1
 
                 result = {
                     'days': duedate,
                     'value': value,
                     'option': option,
-
                 }
                 if not line:
                     lines_pay_ids.append([0, 0, result]) or False

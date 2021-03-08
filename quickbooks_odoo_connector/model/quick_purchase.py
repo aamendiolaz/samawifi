@@ -110,43 +110,44 @@ class quickbook_purchase_order(models.Model):
             if 'Line' in rec:
                 for lines in rec['Line']:
                     if 'ItemBasedExpenseLineDetail' in lines:
-                        product_template_id = self.env['product.template'].search(
-                            [('quickbook_id', '=', lines['ItemBasedExpenseLineDetail']['ItemRef']['value'])])
-                        product_id = self.env['product.product'].search([('name', '=', product_template_id.name)])
-                        order_id = self.env['purchase.order'].search(
-                            [('backend_id', '=', backend_id), ('quickbook_id', '=', rec['Id'])])
+                        if 'value' in lines['ItemBasedExpenseLineDetail']['ItemRef']:
+                            product_template_id = self.env['product.template'].search(
+                                [('quickbook_id', '=', lines['ItemBasedExpenseLineDetail']['ItemRef']['value'])])
+                            product_id = self.env['product.product'].search([('name', '=', product_template_id.name)])
+                            order_id = self.env['purchase.order'].search(
+                                [('backend_id', '=', backend_id), ('quickbook_id', '=', rec['Id'])])
 
-                        tax_id = []
-                        if lines['ItemBasedExpenseLineDetail']['TaxCodeRef']['value'] == 'TAX':
-                            if 'TxnTaxDetail' in rec and 'TxnTaxCodeRef' in rec.get('TxnTaxDetail'):
-                                taxs_id = self.env['account.tax'].search([('type_tax_use', '=', 'purchase'), ('amount_type', '=', 'group'),('quickbook_id', '=', rec['TxnTaxDetail']['TxnTaxCodeRef']['value'])]).id
-                                if taxs_id:
-                                    tax_id.append(taxs_id)
+                            tax_id = []
+                            if lines['ItemBasedExpenseLineDetail']['TaxCodeRef']['value'] == 'TAX':
+                                if 'TxnTaxDetail' in rec and 'TxnTaxCodeRef' in rec.get('TxnTaxDetail'):
+                                    taxs_id = self.env['account.tax'].search([('type_tax_use', '=', 'purchase'), ('amount_type', '=', 'group'),('quickbook_id', '=', rec['TxnTaxDetail']['TxnTaxCodeRef']['value'])]).id
+                                    if taxs_id:
+                                        tax_id.append(taxs_id)
 
-                        if not self.env.company.partner_id.country_id.code is 'US':
-                            if 'TaxCodeRef' in lines.get('ItemBasedExpenseLineDetail'):
-                                taxs_id = self.env['account.tax'].search([('type_tax_use', '=', 'purchase'), ('amount_type', '=', 'group'),('quickbook_id', '=', lines['ItemBasedExpenseLineDetail']['TaxCodeRef']['value'])]).id
-                                if taxs_id:
-                                    tax_id.append(taxs_id)
+                            if not self.env.company.partner_id.country_id.code is 'US':
+                                if 'TaxCodeRef' in lines.get('ItemBasedExpenseLineDetail'):
+                                    taxs_id = self.env['account.tax'].search([('type_tax_use', '=', 'purchase'), ('amount_type', '=', 'group'),('quickbook_id', '=', lines['ItemBasedExpenseLineDetail']['TaxCodeRef']['value'])]).id
+                                    if taxs_id:
+                                        tax_id.append(taxs_id)
 
-                        order = self.env['purchase.order.line'].search(
-                            [('order_id', '=', order_id.id), ('quickbook_id', '=', lines['Id']),
-                             ('name', '=', lines['Description'])])
+                            order = self.env['purchase.order.line'].search(
+                                [('order_id', '=', order_id.id), ('quickbook_id', '=', lines['Id']),
+                                ('name', '=', lines['Description'])])
 
-                        result = {'product_id': product_id.id,
-                                  'price_unit': lines['ItemBasedExpenseLineDetail']['UnitPrice'],
-                                  'product_qty': lines['ItemBasedExpenseLineDetail']['Qty'],
-                                  'product_uom': 1,
-                                  'taxes_id': [(6, 0, tax_id)],
-                                  'price_subtotal': lines['Amount'],
-                                  'name': lines['Description'],
-                                  'quickbook_id': lines['Id'],
-                                  'date_planned': rec['TxnDate']
-                                  }
-                        if not order:
-                            product_ids.append([0, 0, result]) or False
-                        else:
-                            product_ids.append([1, order.id, result])
+                            result = {'product_id': product_id.id,
+                                    'price_unit': lines['ItemBasedExpenseLineDetail']['UnitPrice'],
+                                    'product_qty': lines['ItemBasedExpenseLineDetail']['Qty'],
+                                    'product_uom': 1,
+                                    'taxes_id': [(6, 0, tax_id)],
+                                    'price_subtotal': lines['Amount'],
+                                    'name': lines['Description'],
+                                    'quickbook_id': lines['Id'],
+                                    'date_planned': rec['TxnDate']
+                                    }
+                            if not order:
+                                product_ids.append([0, 0, result]) or False
+                            else:
+                                product_ids.append([1, order.id, result])
             if rec['TotalAmt']:
                 amount_total = rec['TotalAmt']
             if rec['POStatus']:

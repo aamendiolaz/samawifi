@@ -117,54 +117,55 @@ class account_invoice(models.Model):
             if 'Line' in rec:
                 for lines in rec['Line']:
                     if 'SalesItemLineDetail' in lines:
-                        product_template_id = self.env['product.template'].search(
-                            [('quickbook_id', '=', lines['SalesItemLineDetail']['ItemRef']['value']),
-                             ('name', '=', lines['SalesItemLineDetail']['ItemRef']['name'])])
-                        product_id = self.env['product.product'].search([('product_tmpl_id', '=', product_template_id.id),
-                             ('name', '=', product_template_id.name)])
-                        order_id = self.env['account.move'].search([('backend_id', '=', backend_id),('quickbook_id', '=', rec['Id'])])
+                        if 'value' and 'name' in lines['SalesItemLineDetail']['ItemRef']:
+                            product_template_id = self.env['product.template'].search(
+                                [('quickbook_id', '=', lines['SalesItemLineDetail']['ItemRef']['value']),
+                                ('name', '=', lines['SalesItemLineDetail']['ItemRef']['name'])])
+                            product_id = self.env['product.product'].search([('product_tmpl_id', '=', product_template_id.id),
+                                ('name', '=', product_template_id.name)])
+                            order_id = self.env['account.move'].search([('backend_id', '=', backend_id),('quickbook_id', '=', rec['Id'])])
 
-                        tax_id = []
-                        if lines['SalesItemLineDetail']['TaxCodeRef']['value'] == 'TAX':
-                            if 'TxnTaxDetail' in rec and 'TxnTaxCodeRef' in rec.get('TxnTaxDetail'):
-                                taxs_id = self.env['account.tax'].search([('type_tax_use', '=', 'sale'), ('amount_type', '=', 'group'),('quickbook_id', '=', rec['TxnTaxDetail']['TxnTaxCodeRef']['value'])]).id
-                                if taxs_id:
-                                    tax_id.append(taxs_id)
-                        
-                        if not self.env.company.partner_id.country_id.code is 'US':
-                            if 'TaxCodeRef' in lines.get('SalesItemLineDetail'):
-                                taxs_id = self.env['account.tax'].search([('type_tax_use', '=', 'sale'), ('amount_type', '=', 'group'),('quickbook_id', '=', lines['SalesItemLineDetail']['TaxCodeRef']['value'])]).id
-                                if taxs_id:
-                                    tax_id.append(taxs_id)
-                        order = self.env['account.move.line'].search([('move_id', '=', order_id.id),('quickbook_id', '=', lines['Id']),('name', '=', lines.get('Description'))])
-                        
-                        if 'UnitPrice' in lines['SalesItemLineDetail']:
-                            unitprice = lines['SalesItemLineDetail']['UnitPrice']
-                        else:
-                            unitprice = product_id.list_price
+                            tax_id = []
+                            if lines['SalesItemLineDetail']['TaxCodeRef']['value'] == 'TAX':
+                                if 'TxnTaxDetail' in rec and 'TxnTaxCodeRef' in rec.get('TxnTaxDetail'):
+                                    taxs_id = self.env['account.tax'].search([('type_tax_use', '=', 'sale'), ('amount_type', '=', 'group'),('quickbook_id', '=', rec['TxnTaxDetail']['TxnTaxCodeRef']['value'])]).id
+                                    if taxs_id:
+                                        tax_id.append(taxs_id)
+                            
+                            if not self.env.company.partner_id.country_id.code is 'US':
+                                if 'TaxCodeRef' in lines.get('SalesItemLineDetail'):
+                                    taxs_id = self.env['account.tax'].search([('type_tax_use', '=', 'sale'), ('amount_type', '=', 'group'),('quickbook_id', '=', lines['SalesItemLineDetail']['TaxCodeRef']['value'])]).id
+                                    if taxs_id:
+                                        tax_id.append(taxs_id)
+                            order = self.env['account.move.line'].search([('move_id', '=', order_id.id),('quickbook_id', '=', lines['Id']),('name', '=', lines.get('Description'))])
+                            
+                            if 'UnitPrice' in lines['SalesItemLineDetail']:
+                                unitprice = lines['SalesItemLineDetail']['UnitPrice']
+                            else:
+                                unitprice = product_id.list_price
 
-                        if 'Qty' in lines['SalesItemLineDetail']:
-                            quantity = lines['SalesItemLineDetail']['Qty']
-                        else:
-                            quantity = product_id.qty_available
-                        try:
-                            name = lines['Description']
-                        except KeyError:
-                            name = lines['SalesItemLineDetail']['ItemRef']['name']
-                        result = {'product_id':product_id.id,
-                            'price_unit': unitprice,
-                            'quantity': quantity,
-                            'tax_ids': [(6, 0, tax_id)],
-                            'account_id': product_id.property_account_income_id.id or None,
-                            'product_uom_id': 1,
-                            'price_subtotal': lines['Amount'],
-                            'name': name,
-                            'quickbook_id': lines['Id'],
-                            }
-                        if not order:
-                            product_ids.append([0,0,result]) or False
-                        else:
-                            product_ids.append([1,order.id,result])
+                            if 'Qty' in lines['SalesItemLineDetail']:
+                                quantity = lines['SalesItemLineDetail']['Qty']
+                            else:
+                                quantity = product_id.qty_available
+                            try:
+                                name = lines['Description']
+                            except KeyError:
+                                name = lines['SalesItemLineDetail']['ItemRef']['name']
+                            result = {'product_id':product_id.id,
+                                'price_unit': unitprice,
+                                'quantity': quantity,
+                                'tax_ids': [(6, 0, tax_id)],
+                                'account_id': product_id.property_account_income_id.id or None,
+                                'product_uom_id': 1,
+                                'price_subtotal': lines['Amount'],
+                                'name': name,
+                                'quickbook_id': lines['Id'],
+                                }
+                            if not order:
+                                product_ids.append([0,0,result]) or False
+                            else:
+                                product_ids.append([1,order.id,result])
             tax_lines = []
             if 'TxnTaxDetail' in rec:
                 rec_t = record['Invoice'].get('TxnTaxDetail')
@@ -232,49 +233,50 @@ class account_invoice(models.Model):
             if 'Line' in rec:
                 for lines in rec['Line']:
                     if 'ItemBasedExpenseLineDetail' in lines:
-                        product_template_id = self.env['product.template'].search(
-                            [('quickbook_id', '=', lines['ItemBasedExpenseLineDetail']['ItemRef']['value']),
-                             ('name', '=', lines['ItemBasedExpenseLineDetail']['ItemRef']['name'])])
-                        product_id = self.env['product.product'].search([('product_tmpl_id', '=', product_template_id.id),
-                             ('name', '=', product_template_id.name)])
-                        order_id = self.env['account.move'].search([('backend_id', '=', backend_id),('quickbook_id', '=', rec['Id'])])
+                        if 'value' and 'name' in lines['ItemBasedExpenseLineDetail']['ItemRef']:
+                            product_template_id = self.env['product.template'].search(
+                                [('quickbook_id', '=', lines['ItemBasedExpenseLineDetail']['ItemRef']['value']),
+                                ('name', '=', lines['ItemBasedExpenseLineDetail']['ItemRef']['name'])])
+                            product_id = self.env['product.product'].search([('product_tmpl_id', '=', product_template_id.id),
+                                ('name', '=', product_template_id.name)])
+                            order_id = self.env['account.move'].search([('backend_id', '=', backend_id),('quickbook_id', '=', rec['Id'])])
 
-                        tax_id = []
-                        if lines['ItemBasedExpenseLineDetail']['TaxCodeRef']['value'] == 'TAX':
-                            if 'TxnTaxDetail' in rec and 'TxnTaxCodeRef' in rec.get('TxnTaxDetail'):
-                                tax_id = [self.env['account.tax'].search([('type_tax_use', '=', 'purchase'), ('amount_type', '=', 'group'),('quickbook_id', '=', rec['TxnTaxDetail']['TxnTaxCodeRef']['value'])]).id]
+                            tax_id = []
+                            if lines['ItemBasedExpenseLineDetail']['TaxCodeRef']['value'] == 'TAX':
+                                if 'TxnTaxDetail' in rec and 'TxnTaxCodeRef' in rec.get('TxnTaxDetail'):
+                                    tax_id = [self.env['account.tax'].search([('type_tax_use', '=', 'purchase'), ('amount_type', '=', 'group'),('quickbook_id', '=', rec['TxnTaxDetail']['TxnTaxCodeRef']['value'])]).id]
 
-                        if not self.env.company.partner_id.country_id.code is 'US':
-                            if 'TaxCodeRef' in lines.get('ItemBasedExpenseLineDetail'):
-                                taxs_id = self.env['account.tax'].search([('type_tax_use', '=', 'purchase'), ('amount_type', '=', 'group'),('quickbook_id', '=', lines['ItemBasedExpenseLineDetail']['TaxCodeRef']['value'])]).id
-                                if taxs_id:
-                                    tax_id.append(taxs_id)
+                            if not self.env.company.partner_id.country_id.code is 'US':
+                                if 'TaxCodeRef' in lines.get('ItemBasedExpenseLineDetail'):
+                                    taxs_id = self.env['account.tax'].search([('type_tax_use', '=', 'purchase'), ('amount_type', '=', 'group'),('quickbook_id', '=', lines['ItemBasedExpenseLineDetail']['TaxCodeRef']['value'])]).id
+                                    if taxs_id:
+                                        tax_id.append(taxs_id)
 
-                        order = self.env['account.move.line'].search([('move_id', '=', order_id.id),('quickbook_id', '=', lines['Id']),('name', '=', lines.get('Description'))])
-                        
-                        if 'UnitPrice' in lines['ItemBasedExpenseLineDetail']:
-                            unitprice = lines['ItemBasedExpenseLineDetail']['UnitPrice']
-                        else:
-                            unitprice = product_id.list_price
+                            order = self.env['account.move.line'].search([('move_id', '=', order_id.id),('quickbook_id', '=', lines['Id']),('name', '=', lines.get('Description'))])
+                            
+                            if 'UnitPrice' in lines['ItemBasedExpenseLineDetail']:
+                                unitprice = lines['ItemBasedExpenseLineDetail']['UnitPrice']
+                            else:
+                                unitprice = product_id.list_price
 
-                        if 'Qty' in lines['ItemBasedExpenseLineDetail']:
-                            quantity = lines['ItemBasedExpenseLineDetail']['Qty']
-                        else:
-                            quantity = product_id.qty_available
-                        result = {'product_id':product_id.id,
-                            'price_unit': unitprice,
-                            'quantity': quantity,
-                            'tax_ids': [(6, 0, tax_id)],
-                            'account_id': product_id.property_account_expense_id.id or None,
-                            'product_uom_id': 1,
-                            'price_subtotal': lines['Amount'],
-                            'name': lines.get('Description'),
-                            'quickbook_id': lines['Id'],
-                            }
-                        if not order:
-                            product_ids.append([0,0,result]) or False
-                        else:
-                            product_ids.append([1,order.id,result])
+                            if 'Qty' in lines['ItemBasedExpenseLineDetail']:
+                                quantity = lines['ItemBasedExpenseLineDetail']['Qty']
+                            else:
+                                quantity = product_id.qty_available
+                            result = {'product_id':product_id.id,
+                                'price_unit': unitprice,
+                                'quantity': quantity,
+                                'tax_ids': [(6, 0, tax_id)],
+                                'account_id': product_id.property_account_expense_id.id or None,
+                                'product_uom_id': 1,
+                                'price_subtotal': lines['Amount'],
+                                'name': lines.get('Description'),
+                                'quickbook_id': lines['Id'],
+                                }
+                            if not order:
+                                product_ids.append([0,0,result]) or False
+                            else:
+                                product_ids.append([1,order.id,result])
                     elif 'AccountBasedExpenseLineDetail' in lines:
                         product_account_id = self.env['account.account'].search(
                             [('quickbook_id', '=', lines['AccountBasedExpenseLineDetail']['AccountRef']['value'])])
