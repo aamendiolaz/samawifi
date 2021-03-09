@@ -47,7 +47,7 @@ class quickbook_acount(models.Model):
         method = '/query?query=select%20ID%20from%20'
         if not record_id:
             data = headeroauth.get(backend.location + backend.company_id +
-                                   method + arguments + '&minorversion=54', headers=headers)
+                                   method + arguments + '%20STARTPOSITION%20'+ str(filters['count']) + '%20MAXRESULTS%20' + str(1000) + '&minorversion=54', headers=headers)
         else:
             data = headeroauth.get(backend.location + backend.company_id +
                                    '/' + arguments + '/' + str(record_id) + '?minorversion=54', headers=headers)
