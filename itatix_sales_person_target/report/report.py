@@ -11,7 +11,7 @@ class SalesTargetReport(models.Model):
     _rec_name = 'date'
     _order = 'date desc'
 
-    date = fields.Datetime('Target Date', readonly=True)
+    date = fields.Date('Target Date', readonly=True)
     user_id = fields.Many2one('res.users', 'Salesperson', readonly=True)
     sales_team_id = fields.Many2one(related='user_id.sale_team_id', store=True)
     target = fields.Float('Quota', readonly=True)
@@ -25,6 +25,12 @@ class SalesTargetReport(models.Model):
     def read_group(self, domain, fields, groupby, offset=0, limit=None, orderby=False, lazy=True):
         res = super(SalesTargetReport, self).read_group(domain, fields, groupby, offset=offset, limit=limit, orderby=orderby, lazy=lazy)
         groupby = [groupby] if isinstance(groupby, str) else groupby
+        if any("date" in s for s in groupby):
+            for record in res:
+                if record['target']:
+                    record['achieve_perct'] = record['achieve_total'] * 100 / record['target']
+                else:
+                    record['achieve_perct'] = record['achieve_total'] or 1.0 / 1.0
         if not groupby:
             for record in res:
                 if record['target']:

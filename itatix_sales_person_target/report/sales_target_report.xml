@@ -30,7 +30,7 @@
 
 				<filter string="January" name="jan" domain="[
 				('date','&gt;',(context_today()-relativedelta(month=1)).strftime('%%Y-%%m-01')),
-				('date','&lt;',time.strftime('%%Y-%%m-28'))
+				('date','&lt;',(context_today()+relativedelta(month=2)).strftime('%%Y-%%m-01'))
 				]"/>
 				<filter string="February" name="feb" domain="[
 				('date','&gt;',(context_today()+relativedelta(month=2)).strftime('%%Y-%%m-01')),

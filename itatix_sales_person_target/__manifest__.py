@@ -11,6 +11,7 @@
         'security/ir.model.access.csv',
         'views/views.xml',
         'report/sales_target_report.xml',
+        'report/sale_report_views.xml'
     ],
     'installable': True,
 }

@@ -234,7 +234,6 @@ class SalesTarget(models.Model):
                     'target_id': self.id,
                     'date_order': endt,
                     'user_id': self.salesperson.id,
-                    'currency_id': self.currency_id.id,
                 })
 
     @api.onchange('sales_team_id')
@@ -259,7 +258,6 @@ class SalesTarget(models.Model):
             SaleOrders = self.env['account.move'].search(
                 [('user_id', '=', rec.salesperson.id),
                  ('create_date', '>=', stdt),
-                 ('currency_id', '=', rec.currency_id.id),
                  ('create_date', '<=', endt),
                  ('state', '=', 'posted'),
                  ('move_type', '=', 'out_invoice')])
@@ -315,17 +313,22 @@ class SalesTarget(models.Model):
             if rec.target_achieve == 'invoice_created':
                 MoveOrders = self.env['account.move'].search([
                     ('invoice_user_id', '=', rec.salesperson.id),
-                     ('currency_id', '=', rec.currency_id.id),
                     ('create_date', '>=', stdt),
                     ('create_date', '<=', endt),
                     ('state', '=', 'posted'),
                     ('move_type', '=', 'out_invoice')
                 ])
                 total_amount = 0.00
+                company_currency = self.env.company.currency_id
+                foreing_currency = self.env['res.currency'].search([('name', '=', 'USD')])
                 for move in MoveOrders:
-                    total_amount += move.amount_untaxed
+                    if move.currency_id != company_currency:
+                        total_amount += move.amount_untaxed
+                    if move.currency_id == company_currency:
+                        # Conversion al TC de La creacion de la factura pesos a USD
+                        total_amount += company_currency._convert(move.amount_untaxed, foreing_currency, self.env.company, move.create_date)
                 if total_amount < rec.target:
-                    perct_achievement = (total_amount / rec.target or 1 ) * 100
+                    perct_achievement = (total_amount / rec.target or 1) * 100
                 if rec.target != 0.00 and total_amount >= rec.target:
                     perct_achievement = 100
                 if rec.target != 0.00 and total_amount == 0.00:
@@ -386,17 +389,23 @@ class SalesTarget(models.Model):
         if target_achieve == 'invoice_created':
             move_ids = self.env['account.move'].search([
                 ('invoice_user_id', '=', salesperson),
-                ('currency_id', '=', currency_id),
                 ('create_date', '>=', stdt),
                 ('create_date', '<=', endt),
                 ('state', '=', 'posted'),
                 ('move_type', '=', 'out_invoice')
             ])
             total_amount = 0.00
+            company_currency = self.env.company.currency_id
+            foreing_currency = self.env['res.currency'].search([('name', '=', 'USD')])
             for move in move_ids:
-                total_amount += move.amount_untaxed
+                if move.currency_id != company_currency:
+                    total_amount += move.amount_untaxed
+                if move.currency_id == company_currency:
+                    # Conversion al TC de La creacion de la factura pesos a USD
+                    total_amount += company_currency._convert(move.amount_untaxed, foreing_currency, self.env.company,
+                                                              move.create_date)
             if total_amount < target:
-                perct_achievement = (total_amount / target or 1 ) * 100
+                perct_achievement = (total_amount / target or 1) * 100
             if target != 0.00 and total_amount >= target:
                 perct_achievement = 100
             if target != 0.00 and total_amount == 0.00:
@@ -425,7 +434,6 @@ class SalesTarget(models.Model):
         BillingOrders = self.env['account.move'].search([
             ('invoice_user_id', '=', salesperson),
             ('create_date', '>=', stdt),
-            ('currency_id', '=', self.currency_id.id),
             ('create_date', '<=', endt),
             ('move_type', '=', 'out_invoice'),
             ('state', '=', 'posted')
@@ -504,7 +512,6 @@ class SalesTargetLines(models.Model):
                 BillingOrders = self.env['account.move'].search([
                     ('user_id', '=', rec.user_id.id),
                     ('create_date', '>=', stdt),
-                    ('currency_id', '=', rec.target_id.currency_id.id),
                     ('create_date', '<=', endt),
                     ('state', '=', 'posted'),
                     ('move_type', '=', 'out_invoice')
