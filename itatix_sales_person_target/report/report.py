@@ -15,7 +15,6 @@ class SalesTargetReport(models.Model):
     user_id = fields.Many2one('res.users', 'Salesperson', readonly=True)
     sales_team_id = fields.Many2one(related='user_id.sale_team_id', store=True)
     target = fields.Float('Quota', readonly=True)
-    company_id = fields.Many2one('res.company', 'Company', readonly=True)
     currency_id = fields.Many2one('res.currency', 'Currency', readonly=True)
     gap = fields.Float(readonly=True)
     achieve_total = fields.Float('Achieve', readonly=True)
