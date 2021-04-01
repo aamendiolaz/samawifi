@@ -80,18 +80,9 @@ class QboInvoiceExport(QuickExportAdapter):
                 if not arguments[1].env.company.partner_id.country_id.code is 'US':
                     temp.get("SalesItemLineDetail").get('TaxCodeRef').update({'value': taxcodeqb_id })
                 temp_array.append(temp)
-            if arguments[1].discount_type == 'amount':
-                temp = {
-                    "Amount":arguments[1].discount_rate,
-                    "DetailType":"DiscountLineDetail",
-                    "DiscountLineDetail":{
-                    "PercentBased":False,
-                        }
-                    }
-                temp_array.append(temp)
         result_dict = {
             "TxnDate": arguments[1].invoice_date,
-            "DocNumber": arguments[1].name if arguments[1].doc_number == 'False' or arguments[1].doc_number == False  else arguments[1].doc_number,
+            "DocNumber": arguments[1].doc_number,
             "Line": temp_array,
             "TxnTaxDetail": {
                 "TxnTaxCodeRef": {
@@ -169,7 +160,7 @@ class QboInvoiceExport(QuickExportAdapter):
                 temp_array.append(temp)
         result_dict = {
                     "TxnDate": arguments[1].invoice_date,
-                    "DocNumber": arguments[1].name if arguments[1].doc_number =='False' or arguments[1].doc_number == False  else arguments[1].doc_number,
+                    "DocNumber": arguments[1].doc_number,
                     "Line": temp_array,
                     "TxnTaxDetail": {
                         "TxnTaxCodeRef": {

@@ -114,7 +114,6 @@ class account_invoice(models.Model):
                 date_invoice = None
            
             product_ids = []
-            amount = 0
             if 'Line' in rec:
                 for lines in rec['Line']:
                     if 'SalesItemLineDetail' in lines:
@@ -167,9 +166,6 @@ class account_invoice(models.Model):
                                 product_ids.append([0,0,result]) or False
                             else:
                                 product_ids.append([1,order.id,result])
-                    if 'DiscountLineDetail' in lines:
-                        if lines['DiscountLineDetail']['PercentBased'] == False :
-                            amount = lines['Amount']
             tax_lines = []
             if 'TxnTaxDetail' in rec:
                 rec_t = record['Invoice'].get('TxnTaxDetail')
@@ -348,17 +344,13 @@ class account_invoice(models.Model):
             'name':'/',
             'currency_id': currency,
             }
-            if 'Invoice' in record:
-                vals.update({'discount_type': 'amount', 'discount_rate' : amount})
             if not invoice_id:
                 invoice = super(account_invoice, self).create(vals)
                 invoice.action_post()
                 return invoice
             else:
-                if invoice_id.state == 'draft':
-                    invoice = invoice_id.write(vals)
-                    return invoice
-                return
+                invoice = invoice_id.write(vals)
+                return invoice
 
     def invoice_import_batch(self, model_name, backend_id, filters=None):
         """ Import Invoice Details. """
