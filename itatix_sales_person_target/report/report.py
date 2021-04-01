@@ -54,7 +54,7 @@ class SalesTargetReport(models.Model):
         with_ = ("WITH %s" % with_clause) if with_clause else ""
         select_ = """
             min(stl.id) as id,
-            s.company_id as company_id,
+            stl.company_id as company_id,
             stl.date_order as date,
             st.salesperson as user_id,
             stl.monthly_target as target,
