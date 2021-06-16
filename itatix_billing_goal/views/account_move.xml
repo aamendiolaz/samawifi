@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="account_move_tree_billing_goal" model="ir.ui.view">
+            <field name="name">account.move.tree.billing_goal</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_invoice_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='company_id']" position="after">
+                    <field name="invoiced_target" attrs="{'invisible': [('invoiced_target','>=', 0)]}" invisible="context.get('default_move_type') not in ('out_invoice', 'out_refund','out_receipt')"/>
+                    <field name="billing_goal" attrs="{'invisible': [('billing_goal','>=', 0)]}" invisible="context.get('default_move_type') not in ('out_invoice', 'out_refund','out_receipt')"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
