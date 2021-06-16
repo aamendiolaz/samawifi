@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record model="ir.ui.view" id="view_account_invoice_report_search">
+        <field name="name">account.invoice.report.search.sama</field>
+        <field name="model">account.invoice.report</field>
+        <field name="inherit_id" ref="account.view_account_invoice_report_search" />
+        <field name="arch" type="xml">
+            <field name="product_categ_id" position="after">
+              <field name="product_sama_category_id"/>
+              <field name="product_sama_subcategory_id"/>
+              <field name="product_sama_brand_id"/>
+            </field>
+            <filter name="user" position="after">
+                <filter string="SAMA Category" name="groupby_product_sama_category_id" context="{'group_by': 'product_sama_category_id'}"/>
+                <filter string="SAMA Sub-Category" name="groupby_product_sama_subcategory_id" context="{'group_by': 'product_sama_subcategory_id'}"/>
+                <filter string="SAMA Brand" name="groupby_product_sama_brand_id" context="{'group_by':'product_sama_brand_id'}"/>
+            </filter>
+        </field>
+    </record>
+
+</odoo>

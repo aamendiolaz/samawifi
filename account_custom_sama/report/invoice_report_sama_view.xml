@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+    <record id="view_invoice_report_sama_pivot" model="ir.ui.view">
+         <field name="name">invoice.report.sama.pivot</field>
+         <field name="model">invoice.report.sama</field>
+         <field name="arch" type="xml">
+             <pivot string="Invoices Quota Analysis" disable_linking="True" sample="1">
+                 <field name="date_order" type="row"/>
+                 <field name="price_subtotal" type="measure"/>
+                 <field name="amount_target" type="measure"/>
+                 <field name="gap" type="measure"/>
+                 <field name="achieve_perct" type="measure"/>
+             </pivot>
+         </field>
+    </record>
+
+    <record id="view_invoice_report_sama_graph" model="ir.ui.view">
+         <field name="name">invoice.report.sama.graph</field>
+         <field name="model">invoice.report.sama</field>
+         <field name="arch" type="xml">
+             <graph string="Invoices Quota Analysis" type="line" sample="1" disable_linking="1">
+                 <field name="product_categ_id"/>
+                 <field name="price_subtotal" type="measure"/>
+             </graph>
+         </field>
+    </record>
+
+    <!-- Custom reports (aka filters) -->
+    <record id="filter_report_sama_salespersons" model="ir.filters">
+        <field name="name">By Salespersons</field>
+        <field name="model_id">invoice.report.sama</field>
+        <field name="domain">[]</field>
+        <field name="user_id" eval="False"/>
+        <field name="context">{'group_by': ['date_order:month', 'user_id']}</field>
+    </record>
+    <record id="filter_invoice_sama_product" model="ir.filters">
+        <field name="name">By Product</field>
+        <field name="model_id">invoice.report.sama</field>
+        <field name="domain">[]</field>
+        <field name="user_id" eval="False"/>
+        <field name="context">{'group_by': ['date_order:month', 'product_id'], 'set_visible':True, 'residual_invisible':True}</field>
+    </record>
+    <record id="filter_invoice_sama_product_category" model="ir.filters">
+        <field name="name">By Product Category</field>
+        <field name="model_id">invoice.report.sama</field>
+        <field name="domain">[]</field>
+        <field name="user_id" eval="False"/>
+        <field name="context">{'group_by': ['date_order:month', 'product_categ_id'], 'residual_invisible':True}</field>
+    </record>
+
+    <record id="view_invoice_report_sama_search" model="ir.ui.view">
+        <field name="name">invoice.report.sama.search</field>
+        <field name="model">invoice.report.sama</field>
+        <field name="arch" type="xml">
+            <search string="Invoices Quota Analysis">
+                <filter string="My Invoices" name="my_invoice" domain="[('user_id', '=', uid)]"/>
+                <field name="date_order"/>
+                <separator/>
+                <filter name="filter_date_order" date="date_order"/>
+                <field name="user_id" />
+                <field name="team_id"/>
+                <field name="product_id" />
+                <field name="product_categ_id" filter_domain="[('product_categ_id', 'child_of', self)]"/>
+                <field name="product_sama_category_id"/>
+                <field name="product_sama_subcategory_id"/>
+              <field name="product_sama_brand_id"/>
+                <group expand="1" string="Group By">
+                    <filter string="Salesperson" name='user' context="{'group_by':'user_id'}"/>
+                    <filter string="Sales Team" name="sales_channel" domain="[]" context="{'group_by':'team_id'}"/>
+                    <filter string="Product Category" name="category_product" context="{'group_by':'product_categ_id','residual_invisible':True}"/>
+                    <filter string="SAMA Category" name="groupby_product_sama_category_id" context="{'group_by': 'product_sama_category_id'}"/>
+                    <filter string="SAMA Sub-Category" name="groupby_product_sama_subcategory_id" context="{'group_by': 'product_sama_subcategory_id'}"/>
+                    <filter string="SAMA Brand" name="groupby_product_sama_brand_id" context="{'group_by':'product_sama_brand_id'}"/>
+                    <separator orientation="vertical" />
+                    <filter string="Date" name="date_order" context="{'group_by':'date_order'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_invoice_report_sama_all" model="ir.actions.act_window">
+        <field name="name">Invoices Quota Analysis</field>
+        <field name="res_model">invoice.report.sama</field>
+        <field name="view_mode">pivot,graph</field>
+        <field name="context">{'search_default_current':1, 'group_by':['date_order'], 'group_by_no_leaf':1}</field>
+        <field name="search_view_id" ref="view_invoice_report_sama_search"/>
+        <field name="context">{'group_by': 'team_id'}</field>
+        <field name="help">From this report, you can have an overview of the amount invoiced versus Qouta.</field>
+    </record>
+
+    <menuitem id="menu_action_invoice_report_sama_all"
+      parent="sale.menu_sale_report"
+      name="Invoice Quota Analysis"
+      action="action_invoice_report_sama_all"
+      sequence="20"/>
+
+</data>
+</odoo>

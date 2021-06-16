@@ -31,6 +31,11 @@ class SaleReport(models.Model):
     untaxed_amount_invoiced = fields.Float('Untaxed Amount Invoiced', readonly=True)
     product_tmpl_id = fields.Many2one('product.template', 'Product', readonly=True)
     categ_id = fields.Many2one('product.category', 'Product Category', readonly=True)
+
+    sama_category_id = fields.Many2one('sama.category', readonly=True)
+    sama_subcategory_id = fields.Many2one('sama.subcategory', readonly=True)
+    sama_brand_id = fields.Many2one('sama.brand', readonly=True, string="Brand")
+
     nbr = fields.Integer('# of Lines', readonly=True)
     pricelist_id = fields.Many2one('product.pricelist', 'Pricelist', readonly=True)
     analytic_account_id = fields.Many2one('account.analytic.account', 'Analytic Account', readonly=True)
@@ -81,6 +86,9 @@ class SaleReport(models.Model):
                 s.source_id as source_id,
                 extract(epoch from avg(date_trunc('day',s.date_order)-date_trunc('day',s.create_date)))/(24*60*60)::decimal(16,2) as delay,
                 t.categ_id as categ_id,
+                t.sama_category_id as sama_category_id,
+                t.sama_subcategory_id as sama_subcategory_id,
+                t.sama_brand_id as sama_brand_id,
                 s.pricelist_id as pricelist_id,
                 s.analytic_account_id as analytic_account_id,
                 s.team_id as team_id,
@@ -115,6 +123,9 @@ class SaleReport(models.Model):
                 l.order_id,
                 t.uom_id,
                 t.categ_id,
+                t.sama_category_id,
+                t.sama_subcategory_id,
+                t.sama_brand_id,
                 s.name,
                 s.date_order,
                 s.partner_id,
