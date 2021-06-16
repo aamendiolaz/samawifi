@@ -143,8 +143,9 @@ class InvoiceReportSama(models.Model):
                         date = line['date_order:month'].split(' ')
                         month = months[date[0].upper()]
                         year = int(date[1])
+                        print('date, calendar.monthrange(year, month)', date, calendar.monthrange(year, month))
                         first, last = calendar.monthrange(year, month)
-                        date_begin = "%s-%.2d-%.2d"%(date[1], month, first)
+                        date_begin = "%s-%.2d-01"%(date[1], month)
                         date_end = "%s-%.2d-%.2d"%(date[1], month, last)
                         line_domain = [('date_order', '>=', date_begin), ('date_order', '<=', date_end)]
 
@@ -169,8 +170,9 @@ class InvoiceReportSama(models.Model):
                         date = line['date_order:month'].split(' ')
                         month = months[date[0].upper()]
                         year = int(date[1])
+                        print('date, calendar.monthrange(year, month)', date, calendar.monthrange(year, month))
                         first, last = calendar.monthrange(year, month)
-                        date_begin = "%s-%.2d-%.2d"%(date[1], month, first)
+                        date_begin = "%s-%.2d-01"%(date[1], month)
                         date_end = "%s-%.2d-%.2d"%(date[1], month, last)
                         line_domain = [('date_order', '>=', date_begin), ('date_order', '<=', date_end)]
                         print('line_domain', line_domain, '\n')
