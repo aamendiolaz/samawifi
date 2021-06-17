@@ -157,10 +157,10 @@ class InvoiceReportSama(models.Model):
                         line['amount_target'] = amount_target
 
                 if 'gap' in line:
-                    line['gap'] = line.get('price_subtotal', 0.0) - line.get('amount_target', 0.0)
+                    line['gap'] = line.get('price_subtotal_usd', 0.0) - line.get('amount_target', 0.0)
 
                 if 'achieve_perct' in line:
-                    line['achieve_perct'] = line.get('price_subtotal', 0.0) * 100.0 / (line.get('amount_target', 0.0) or 1.0)
+                    line['achieve_perct'] = line.get('price_subtotal_usd', 0.0) * 100.0 / (line.get('amount_target', 0.0) or 1.0)
 
         elif 'team_id' in groupby:
             for line in result:
@@ -185,9 +185,9 @@ class InvoiceReportSama(models.Model):
                         line['amount_target'] = amount_target
 
                 if 'gap' in line:
-                    line['gap'] = line.get('price_subtotal', 0.0) - line.get('amount_target', 0.0)
+                    line['gap'] = line.get('price_subtotal_usd', 0.0) - line.get('amount_target', 0.0)
 
                 if 'achieve_perct' in line:
-                    line['achieve_perct'] = line.get('price_subtotal', 0.0) * 100.0 / (line.get('amount_target', 0.0) or 1.0)
+                    line['achieve_perct'] = line.get('price_subtotal_usd', 0.0) * 100.0 / (line.get('amount_target', 0.0) or 1.0)
 
         return result

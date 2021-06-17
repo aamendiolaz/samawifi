@@ -7,8 +7,8 @@
          <field name="arch" type="xml">
              <pivot string="Invoices Quota Analysis" disable_linking="True" sample="1">
                  <field name="date_order" type="row"/>
-                 <field name="price_subtotal" type="measure"/>
                  <field name="amount_target" type="measure"/>
+                 <field name="price_subtotal_usd" type="measure"/>
                  <field name="gap" type="measure"/>
                  <field name="achieve_perct" type="measure"/>
              </pivot>
@@ -21,7 +21,7 @@
          <field name="arch" type="xml">
              <graph string="Invoices Quota Analysis" type="line" sample="1" disable_linking="1">
                  <field name="product_categ_id"/>
-                 <field name="price_subtotal" type="measure"/>
+                 <field name="price_subtotal_usd" type="measure"/>
              </graph>
          </field>
     </record>
