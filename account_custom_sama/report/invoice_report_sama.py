@@ -39,6 +39,7 @@ class InvoiceReportSama(models.Model):
 
     # ==== Invoice fields ====
     move_id = fields.Many2one('account.move', readonly=True)
+    company_id = fields.Many2one('res.company', string='Company', readonly=True)
     user_id = fields.Many2one('res.users', string='Salesperson', readonly=True)
     team_id = fields.Many2one('crm.team', string='Sales Team')
     date_order = fields.Date(readonly=True, string="Invoice Date")
@@ -80,6 +81,7 @@ class InvoiceReportSama(models.Model):
             SELECT
                 line.id,
                 line.move_id,
+                line.company_id,
                 line.product_id,
                 move.invoice_user_id                                        AS user_id,
                 move.team_id                                                AS team_id,
@@ -143,7 +145,6 @@ class InvoiceReportSama(models.Model):
                         date = line['date_order:month'].split(' ')
                         month = months[date[0].upper()]
                         year = int(date[1])
-                        print('date, calendar.monthrange(year, month)', date, calendar.monthrange(year, month))
                         first, last = calendar.monthrange(year, month)
                         date_begin = "%s-%.2d-01"%(date[1], month)
                         date_end = "%s-%.2d-%.2d"%(date[1], month, last)
@@ -170,12 +171,10 @@ class InvoiceReportSama(models.Model):
                         date = line['date_order:month'].split(' ')
                         month = months[date[0].upper()]
                         year = int(date[1])
-                        print('date, calendar.monthrange(year, month)', date, calendar.monthrange(year, month))
                         first, last = calendar.monthrange(year, month)
                         date_begin = "%s-%.2d-01"%(date[1], month)
                         date_end = "%s-%.2d-%.2d"%(date[1], month, last)
                         line_domain = [('date_order', '>=', date_begin), ('date_order', '<=', date_end)]
-                        print('line_domain', line_domain, '\n')
 
                     if 'team_id' in line and line['team_id']:
                         team_id = line['team_id'][0]
