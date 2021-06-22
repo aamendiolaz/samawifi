@@ -57,6 +57,9 @@
                 <filter string="My Invoices" name="my_invoice" domain="[('user_id', '=', uid)]"/>
                 <field name="date_order"/>
                 <separator/>
+                <filter string="Invoices" name="invoice" domain="['|', ('move_type','=','out_invoice'),('move_type','=','in_invoice')]"/>
+                <filter string="Credit Notes" name="creditnote" domain="['|', ('move_type','=','out_refund'),('move_type','=','in_refund')]"/>
+                <separator/>
                 <filter name="filter_date_order" date="date_order"/>
                 <field name="user_id" />
                 <field name="team_id"/>

@@ -42,6 +42,10 @@ class InvoiceReportSama(models.Model):
     company_id = fields.Many2one('res.company', string='Company', readonly=True)
     user_id = fields.Many2one('res.users', string='Salesperson', readonly=True)
     team_id = fields.Many2one('crm.team', string='Sales Team')
+    move_type = fields.Selection([
+        ('out_invoice', 'Customer Invoice'),
+        ('out_refund', 'Customer Credit Note'),
+        ], readonly=True)
     date_order = fields.Date(readonly=True, string="Invoice Date")
     product_id = fields.Many2one('product.product', string='Product', readonly=True)
     product_categ_id = fields.Many2one('product.category', string='Product Category', readonly=True)
@@ -83,6 +87,7 @@ class InvoiceReportSama(models.Model):
                 line.move_id,
                 line.company_id,
                 line.product_id,
+                move.move_type                                              AS move_type,
                 move.invoice_user_id                                        AS user_id,
                 move.team_id                                                AS team_id,
                 move.invoice_date                                           AS date_order,
@@ -91,7 +96,7 @@ class InvoiceReportSama(models.Model):
                 template.sama_subcategory_id                                AS product_sama_subcategory_id,
                 template.sama_brand_id                                      AS product_sama_brand_id,
                 -line.balance * currency_table.rate                         AS price_subtotal,
-                line.price_subtotal * move.currency_rate_usd                AS price_subtotal_usd,
+                CASE WHEN move.amount_untaxed_signed < 0 THEN -line.price_subtotal * move.currency_rate_usd ELSE line.price_subtotal * move.currency_rate_usd END  AS price_subtotal_usd,
                 0.0                                                         AS amount_target,
                 0.0                                                         AS gap,
                 0.0                                                         AS achieve_perct
@@ -112,7 +117,7 @@ class InvoiceReportSama(models.Model):
     @api.model
     def _where(self):
         return '''
-            WHERE move.move_type IN ('out_invoice')
+            WHERE move.move_type IN ('out_invoice','out_refund')
                 AND move.state NOT IN ('draft', 'cancel')
                 AND line.account_id IS NOT NULL
                 AND NOT line.exclude_from_invoice_tab
@@ -150,7 +155,7 @@ class InvoiceReportSama(models.Model):
                         date_end = "%s-%.2d-%.2d"%(date[1], month, last)
                         line_domain = [('date_order', '>=', date_begin), ('date_order', '<=', date_end)]
 
-                    if 'user_id' in line:
+                    if 'user_id' in line and line['user_id']:
                         line_domain = expression.AND([line_domain, [('user_id','=',line['user_id'][0])]])
                         target_lines = self.env['sales.target.lines'].search(line_domain)
                         amount_target = sum(target_lines.mapped('monthly_target'))

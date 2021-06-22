@@ -20,6 +20,6 @@ class AccountInvoiceReport(models.Model):
             template.sama_category_id                                           AS product_sama_category_id,
             template.sama_subcategory_id                                           AS product_sama_subcategory_id,
             template.sama_brand_id                                           AS product_sama_brand_id,
-            line.price_subtotal * move.currency_rate_usd                         AS price_subtotal_usd,
+            CASE WHEN move.amount_untaxed_signed < 0 THEN -line.price_subtotal * move.currency_rate_usd ELSE line.price_subtotal * move.currency_rate_usd END  AS price_subtotal_usd,
             """
         )
