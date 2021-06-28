@@ -19,6 +19,7 @@ This module add brand and sub-category on invoice report
         'security/ir.model.access.csv',
         'report/invoice_report_view.xml',
         'report/invoice_report_sama_view.xml',
+        'views/account_move.xml',
     ],
     'demo': [
     ],

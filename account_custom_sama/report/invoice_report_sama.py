@@ -125,7 +125,7 @@ class InvoiceReportSama(models.Model):
 
 
     @api.model
-    def read_group(self, domain, fields, groupby, offset=0, limit=None, orderby=False, lazy=True):
+    def read_group_bad(self, domain, fields, groupby, offset=0, limit=None, orderby=False, lazy=True):
         result = super(InvoiceReportSama, self).read_group(domain, fields, groupby, offset, limit, orderby, lazy)
         reverse_domain = domain.copy()
         reverse_domain.reverse()
@@ -194,5 +194,26 @@ class InvoiceReportSama(models.Model):
 
                 if 'achieve_perct' in line:
                     line['achieve_perct'] = line.get('price_subtotal_usd', 0.0) * 100.0 / (line.get('amount_target', 0.0) or 1.0)
+
+        return result
+    @api.model
+    def read_group(self, domain, fields, groupby, offset=0, limit=None, orderby=False, lazy=True):
+        result = super(InvoiceReportSama, self).read_group(domain, fields, groupby, offset, limit, orderby, lazy)
+
+        for line in result:
+            print('line', line)
+            line.setdefault('price_subtotal_usd', 0.0)
+            try:
+                target_lines = self.env['sales.target.lines'].search(line.get('__domain', []))
+                amount_target = sum(target_lines.mapped('monthly_target'))
+                line['amount_target'] = amount_target
+            except:
+                line['amount_target'] = 0.0
+
+            if 'gap' in line:
+                line['gap'] = line.get('price_subtotal_usd', 0.0) - line.get('amount_target', 0.0)
+
+            if 'achieve_perct' in line:
+                line['achieve_perct'] = line.get('price_subtotal_usd', 0.0) * 100.0 / (line.get('amount_target', 0.0) or 1.0)
 
         return result

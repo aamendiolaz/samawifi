@@ -283,10 +283,10 @@
 	</record>
 
 	<!-- Sales Target Menuitem -->
-	<!--menuitem id="menu_sales_target" parent="sale.sale_order_menu"
+	<menuitem id="menu_sales_target" parent="sale.sale_order_menu"
 			  sequence="10" action="sales_target_action"/>
 
-	<menuitem id="sale.sale_order_menu" name="Configuration"
+	<!--menuitem id="sale.sale_order_menu" name="Configuration"
 			  parent="sale.sale_menu_root" sequence="6"/>
 
 	<menuitem id="sale.menu_sale_report" name="Reporting"
