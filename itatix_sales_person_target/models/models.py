@@ -126,6 +126,7 @@ class SalesTarget(models.Model):
     current_year = fields.Date(copy=False)
     gap = fields.Float(copy=False, compute='_compute_monthly_target', store=True)
     total_target = fields.Float(copy=False, string="Teams Quota", compute='_compute_quota_sales_team', store=True)
+    company_id = fields.Many2one('res.company', 'Company', required=True, index=True, default=lambda self: self.env.company)
 
     @api.depends('sales_team_id', 'sales_target_lines.monthly_target')
     def _compute_quota_sales_team(self):
@@ -500,6 +501,7 @@ class SalesTargetLines(models.Model):
     monthly_target_achieve_per = fields.Float("Monthly Target Achieved Percentage", copy=False)
     gap = fields.Float(copy=False)
     current_year = fields.Boolean(copy=False)
+    company_id = fields.Many2one(related='target_id.company_id', string='Company', store=True, readonly=True, index=True)
 
     @api.depends('user_id', 'date_order')
     def _get_total_sales(self):

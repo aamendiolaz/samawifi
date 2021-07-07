@@ -199,21 +199,32 @@ class InvoiceReportSama(models.Model):
     @api.model
     def read_group(self, domain, fields, groupby, offset=0, limit=None, orderby=False, lazy=True):
         result = super(InvoiceReportSama, self).read_group(domain, fields, groupby, offset, limit, orderby, lazy)
+        print('domain', domain, "\n")
 
         for line in result:
             print('line', line)
             line.setdefault('price_subtotal_usd', 0.0)
             try:
-                target_lines = self.env['sales.target.lines'].search(line.get('__domain', []))
+                __domain = line.get('__domain', [])
+                print('__domain', __domain)
+                if not __domain:
+                    __domain = domain
+                target_lines = self.env['sales.target.lines'].search(__domain)
                 amount_target = sum(target_lines.mapped('monthly_target'))
                 line['amount_target'] = amount_target
             except:
                 line['amount_target'] = 0.0
 
             if 'gap' in line:
-                line['gap'] = line.get('price_subtotal_usd', 0.0) - line.get('amount_target', 0.0)
+                try:
+                    line['gap'] = line.get('price_subtotal_usd', 0.0) - line.get('amount_target', 0.0)
+                except:
+                    line['gap'] = 0.0
 
             if 'achieve_perct' in line:
-                line['achieve_perct'] = line.get('price_subtotal_usd', 0.0) * 100.0 / (line.get('amount_target', 0.0) or 1.0)
+                try:
+                    line['achieve_perct'] = line.get('price_subtotal_usd', 0.0) * 100.0 / (line.get('amount_target', 0.0) or 1.0)
+                except:
+                    line['achieve_perct'] = 0.0
 
         return result

@@ -13,4 +13,19 @@
 		<field name="domain_force">[('salesperson', '=', user.id)]</field>
 	</record>
 
+  <data noupdate="1">
+    <!-- Multi - Company Rules -->
+
+    <record model="ir.rule" id="sales_target_comp_rule">
+        <field name="name">Sales Target multi-company</field>
+        <field name="model_id" ref="itatix_sales_person_target.model_sales_target" />
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record model="ir.rule" id="sales_target_lines_comp_rule">
+        <field name="name">Sales Target Line multi-company</field>
+        <field name="model_id" ref="itatix_sales_person_target.model_sales_target_lines" />
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+  </data>
 </odoo>
