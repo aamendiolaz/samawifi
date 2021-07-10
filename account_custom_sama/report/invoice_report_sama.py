@@ -218,7 +218,12 @@ class InvoiceReportSama(models.Model):
                 # print('__domain', __domain)
                 if not __domain:
                     __domain = domain
-                target_lines = self.env['sales.target.lines'].search(domain)
+                _logger.info('::::::::::::::DOMAIN RESULT::::::::::::::')
+                _logger.info('::::::::::::::DOMAIN RESULT::::::::::::::')
+                _logger.info(json.dumps(domain, indent='\t'))
+                _logger.info('::::::::::::::DOMAIN RESULT::::::::::::::')
+                _logger.info('::::::::::::::DOMAIN RESULT::::::::::::::')
+                target_lines = self.env['sales.target.lines'].search(__domain)
                 amount_target = sum(target_lines.mapped('monthly_target'))
                 line['amount_target'] = amount_target
             except:
