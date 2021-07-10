@@ -223,15 +223,18 @@ class InvoiceReportSama(models.Model):
                 _logger.info(json.dumps(__domain, indent='\t'))
                 _logger.info('::::::::::::::DOMAIN RESULT::::::::::::::')
                 _logger.info('::::::::::::::DOMAIN RESULT::::::::::::::')
-                if len(__domain) > 1:
-                    newDomain = [__domain[1]]
-                    target_lines = self.env['sales.target.lines'].search(newDomain)
-                    amount_target = sum(target_lines.mapped('monthly_target'))
-                    line['amount_target'] = amount_target
-                else:
-                    target_lines = self.env['sales.target.lines'].search(__domain)
-                    amount_target = sum(target_lines.mapped('monthly_target'))
-                    line['amount_target'] = amount_target
+                target_lines = self.env['sales.target.lines'].search(__domain)
+                amount_target = sum(target_lines.mapped('monthly_target'))
+                line['amount_target'] = amount_target
+                # if len(__domain) = 4 & __domain[1] = :
+                #     newDomain = [__domain[1]]
+                #     target_lines = self.env['sales.target.lines'].search(newDomain)
+                #     amount_target = sum(target_lines.mapped('monthly_target'))
+                #     line['amount_target'] = amount_target
+                # else:
+                #     target_lines = self.env['sales.target.lines'].search(__domain)
+                #     amount_target = sum(target_lines.mapped('monthly_target'))
+                #     line['amount_target'] = amount_target
             except Exception as e:
                 _logger.info('::::::::::::::EXCEPTION RESULT::::::::::::::')
                 _logger.info('::::::::::::::EXCEPTION RESULT::::::::::::::')
