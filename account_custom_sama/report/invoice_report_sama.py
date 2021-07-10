@@ -81,6 +81,7 @@ class InvoiceReportSama(models.Model):
 
     @api.model
     def _select(self):
+        print('domain', domain, "\n")
         return '''
             SELECT
                 line.id,
@@ -104,6 +105,7 @@ class InvoiceReportSama(models.Model):
 
     @api.model
     def _from(self):
+        print('domain', domain, "\n")
         return '''
             FROM account_move_line line
                 LEFT JOIN product_product product ON product.id = line.product_id
@@ -116,6 +118,7 @@ class InvoiceReportSama(models.Model):
 
     @api.model
     def _where(self):
+        print('domain', domain, "\n")
         return '''
             WHERE move.move_type IN ('out_invoice','out_refund')
                 AND move.state NOT IN ('draft', 'cancel')
@@ -130,6 +133,7 @@ class InvoiceReportSama(models.Model):
         reverse_domain = domain.copy()
         reverse_domain.reverse()
         date_domain = []
+        print('domain', domain, "\n")
         for item in reverse_domain:
             if (isinstance(item, list) and len(item) == 3 and item[0] == 'date_order'):
                 item_copy = item.copy()
