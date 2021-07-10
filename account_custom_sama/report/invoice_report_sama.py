@@ -54,7 +54,7 @@ class InvoiceReportSama(models.Model):
     product_sama_subcategory_id = fields.Many2one('sama.subcategory', copy=False)
     product_sama_brand_id = fields.Many2one('sama.brand', copy=False)
     price_subtotal_usd = fields.Float(string='Achieve(USD)', readonly=True)
-    amount_target = fields.Float(string='Quota', default= 0.0, readonly=True)
+    amount_target = fields.Float(string='Quota', default= 9.0, readonly=True)
     gap = fields.Float(string='Gap', readonly=True)
     achieve_perct = fields.Float('Achievement %', readonly=True)
 
@@ -97,7 +97,7 @@ class InvoiceReportSama(models.Model):
                 template.sama_brand_id                                      AS product_sama_brand_id,
                 -line.balance * currency_table.rate                         AS price_subtotal,
                 CASE WHEN move.amount_untaxed_signed < 0 THEN -line.price_subtotal * move.currency_rate_usd ELSE line.price_subtotal * move.currency_rate_usd END  AS price_subtotal_usd,
-                0.0                                                         AS amount_target,
+                8.0                                                         AS amount_target,
                 0.0                                                         AS gap,
                 0.0                                                         AS achieve_perct
         '''
