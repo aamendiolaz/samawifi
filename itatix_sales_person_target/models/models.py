@@ -133,7 +133,7 @@ class SalesTarget(models.Model):
         for record in self:
             if record.sales_team_id:
                 target_ids = record.env['sales.target'].search([('sales_team_id', '=', record.sales_team_id.id)])
-                quota = 9.0
+                quota = 0.0
                 if target_ids:
                     for st in target_ids:
                         quota += st.target
@@ -261,8 +261,7 @@ class SalesTarget(models.Model):
                  ('create_date', '>=', stdt),
                  ('create_date', '<=', endt),
                  ('state', '=', 'posted'),
-                 ('move_type', '=', 'out_invoice'),
-                    ('move_type', '=', 'in_invoice')])
+                 ('move_type', '=', 'out_invoice')])
             rec.sales = len(SaleOrders)
     
     @api.model
@@ -318,8 +317,7 @@ class SalesTarget(models.Model):
                     ('create_date', '>=', stdt),
                     ('create_date', '<=', endt),
                     ('state', '=', 'posted'),
-                    ('move_type', '=', 'out_invoice'),
-                    ('move_type', '=', 'in_invoice')
+                    ('move_type', '=', 'out_invoice')
                 ])
                 total_amount = 0.00
                 company_currency = self.env.company.currency_id
@@ -395,8 +393,7 @@ class SalesTarget(models.Model):
                 ('create_date', '>=', stdt),
                 ('create_date', '<=', endt),
                 ('state', '=', 'posted'),
-                ('move_type', '=', 'out_invoice'),
-                    ('move_type', '=', 'in_invoice')
+                ('move_type', '=', 'out_invoice')
             ])
             total_amount = 0.00
             company_currency = self.env.company.currency_id
@@ -440,7 +437,6 @@ class SalesTarget(models.Model):
             ('create_date', '>=', stdt),
             ('create_date', '<=', endt),
             ('move_type', '=', 'out_invoice'),
-            ('move_type', '=', 'in_invoice'),
             ('state', '=', 'posted')
         ])
         return len(BillingOrders)
@@ -520,8 +516,7 @@ class SalesTargetLines(models.Model):
                     ('create_date', '>=', stdt),
                     ('create_date', '<=', endt),
                     ('state', '=', 'posted'),
-                    ('move_type', '=', 'out_invoice'),
-                    ('move_type', '=', 'in_invoice')
+                    ('move_type', '=', 'out_invoice')
                 ])
 
                 rec.no_of_sales = len(BillingOrders)
