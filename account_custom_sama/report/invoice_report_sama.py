@@ -211,9 +211,8 @@ class InvoiceReportSama(models.Model):
                 # print('__domain', __domain)
                 if not __domain:
                     __domain = domain
-                # target_lines = self.env['sales.target.lines'].search(__domain)
-                # amount_target = sum(target_lines.mapped('monthly_target'))
-                line['amount_target'] = 10.0
+                target_lines = self.env['sales.target.lines']
+                amount_target = sum(target_lines.mapped('monthly_target'))
             except:
                 line['amount_target'] = 9.0
 
