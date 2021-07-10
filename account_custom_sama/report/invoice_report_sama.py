@@ -216,7 +216,7 @@ class InvoiceReportSama(models.Model):
                 __domain = line.get('__domain', [])
                 # line['amount_target'] = 9.0
                 # print('__domain', __domain)
-                if not __domain:
+                if __domain:
                     __domain = domain
                 _logger.info('::::::::::::::DOMAIN RESULT::::::::::::::')
                 _logger.info('::::::::::::::DOMAIN RESULT::::::::::::::')
