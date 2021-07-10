@@ -226,7 +226,12 @@ class InvoiceReportSama(models.Model):
                 target_lines = self.env['sales.target.lines'].search(__domain)
                 amount_target = sum(target_lines.mapped('monthly_target'))
                 line['amount_target'] = amount_target
-            except:
+            except Exception as e:
+                _logger.info('::::::::::::::EXCEPTION RESULT::::::::::::::')
+                _logger.info('::::::::::::::EXCEPTION RESULT::::::::::::::')
+                _logger.info(json.dumps(e, indent='\t'))
+                _logger.info('::::::::::::::EXCEPTION RESULT::::::::::::::')
+                _logger.info('::::::::::::::EXCEPTION RESULT::::::::::::::')
                 line['amount_target'] = 9.0
 
             if 'gap' in line:
