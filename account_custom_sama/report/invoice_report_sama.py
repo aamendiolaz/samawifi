@@ -229,7 +229,7 @@ class InvoiceReportSama(models.Model):
             except Exception as e:
                 _logger.info('::::::::::::::EXCEPTION RESULT::::::::::::::')
                 _logger.info('::::::::::::::EXCEPTION RESULT::::::::::::::')
-                _logger.info(json.dumps(e, indent='\t'))
+                _logger.info(json.dumps(str(e), indent='\t'))
                 _logger.info('::::::::::::::EXCEPTION RESULT::::::::::::::')
                 _logger.info('::::::::::::::EXCEPTION RESULT::::::::::::::')
                 line['amount_target'] = 9.0
