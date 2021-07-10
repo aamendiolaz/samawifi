@@ -225,11 +225,11 @@ class InvoiceReportSama(models.Model):
                 _logger.info('::::::::::::::DOMAIN RESULT::::::::::::::')
                 if len(__domain) > 1:
                     newDomain = [__domain[1]]
-                    target_lines = self.env['sales.target.lines'].search(__domain[0])
+                    target_lines = self.env['sales.target.lines'].search(newDomain)
                     amount_target = sum(target_lines.mapped('monthly_target'))
                     line['amount_target'] = amount_target
                 else:
-                    target_lines = self.env['sales.target.lines'].search(__domain[0])
+                    target_lines = self.env['sales.target.lines'].search(__domain)
                     amount_target = sum(target_lines.mapped('monthly_target'))
                     line['amount_target'] = amount_target
             except Exception as e:
