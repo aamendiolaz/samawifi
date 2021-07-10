@@ -261,7 +261,8 @@ class SalesTarget(models.Model):
                  ('create_date', '>=', stdt),
                  ('create_date', '<=', endt),
                  ('state', '=', 'posted'),
-                 ('move_type', '=', 'out_invoice')])
+                 ('move_type', '=', 'out_invoice'),
+                    ('move_type', '=', 'in_invoice')])
             rec.sales = len(SaleOrders)
     
     @api.model
@@ -317,7 +318,8 @@ class SalesTarget(models.Model):
                     ('create_date', '>=', stdt),
                     ('create_date', '<=', endt),
                     ('state', '=', 'posted'),
-                    ('move_type', '=', 'out_invoice')
+                    ('move_type', '=', 'out_invoice'),
+                    ('move_type', '=', 'in_invoice')
                 ])
                 total_amount = 0.00
                 company_currency = self.env.company.currency_id
@@ -393,7 +395,8 @@ class SalesTarget(models.Model):
                 ('create_date', '>=', stdt),
                 ('create_date', '<=', endt),
                 ('state', '=', 'posted'),
-                ('move_type', '=', 'out_invoice')
+                ('move_type', '=', 'out_invoice'),
+                    ('move_type', '=', 'in_invoice')
             ])
             total_amount = 0.00
             company_currency = self.env.company.currency_id
@@ -437,6 +440,7 @@ class SalesTarget(models.Model):
             ('create_date', '>=', stdt),
             ('create_date', '<=', endt),
             ('move_type', '=', 'out_invoice'),
+            ('move_type', '=', 'in_invoice'),
             ('state', '=', 'posted')
         ])
         return len(BillingOrders)
