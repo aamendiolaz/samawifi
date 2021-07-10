@@ -206,7 +206,7 @@ class InvoiceReportSama(models.Model):
             print('line', line)
             line.setdefault('price_subtotal_usd', 0.0)
             try:
-                # __domain = line.get('__domain', [])
+                __domain = line.get('__domain', [])
                 # line['amount_target'] = 9.0
                 # print('__domain', __domain)
                 if not __domain:
