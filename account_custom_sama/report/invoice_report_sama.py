@@ -214,7 +214,7 @@ class InvoiceReportSama(models.Model):
                 amount_target = sum(target_lines.mapped('monthly_target'))
                 line['amount_target'] = amount_target
             except:
-                line['amount_target'] = 0.0
+                line['amount_target'] = 9.0
 
             if 'gap' in line:
                 try:
