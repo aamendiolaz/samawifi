@@ -223,7 +223,7 @@ class InvoiceReportSama(models.Model):
                 _logger.info(json.dumps(__domain, indent='\t'))
                 _logger.info('::::::::::::::DOMAIN RESULT::::::::::::::')
                 _logger.info('::::::::::::::DOMAIN RESULT::::::::::::::')
-                if len(__domain) > 4:
+                if len(__domain) == 5:
                     newDomain = [__domain[1]]
                     target_lines = self.env['sales.target.lines'].search(newDomain)
                     amount_target = sum(target_lines.mapped('monthly_target'))
