@@ -206,12 +206,12 @@ class InvoiceReportSama(models.Model):
             print('line', line)
             line.setdefault('price_subtotal_usd', 0.0)
             try:
-                __domain = line.get('__domain', [])
+                # __domain = line.get('__domain', [])
                 # line['amount_target'] = 9.0
                 # print('__domain', __domain)
                 if not __domain:
                     __domain = domain
-                target_lines = self.env['sales.target.lines']
+                target_lines = self.env['sales.target.lines'].search(__domain)
                 amount_target = sum(target_lines.mapped('monthly_target'))
             except:
                 line['amount_target'] = 9.0
