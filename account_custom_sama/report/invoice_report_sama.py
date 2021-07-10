@@ -54,7 +54,7 @@ class InvoiceReportSama(models.Model):
     product_sama_subcategory_id = fields.Many2one('sama.subcategory', copy=False)
     product_sama_brand_id = fields.Many2one('sama.brand', copy=False)
     price_subtotal_usd = fields.Float(string='Achieve(USD)', readonly=True)
-    amount_target = fields.Float(string='Quota', default= 9.0, readonly=True)
+    amount_target = fields.Float(string='Quota', default= 0.0, readonly=True)
     gap = fields.Float(string='Gap', readonly=True)
     achieve_perct = fields.Float('Achievement %', readonly=True)
 

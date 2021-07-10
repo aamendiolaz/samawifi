@@ -133,7 +133,7 @@ class SalesTarget(models.Model):
         for record in self:
             if record.sales_team_id:
                 target_ids = record.env['sales.target'].search([('sales_team_id', '=', record.sales_team_id.id)])
-                quota = 0.0
+                quota = 9.0
                 if target_ids:
                     for st in target_ids:
                         quota += st.target
