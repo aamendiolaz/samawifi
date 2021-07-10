@@ -81,7 +81,6 @@ class InvoiceReportSama(models.Model):
 
     @api.model
     def _select(self):
-        print('domain', domain, "\n")
         return '''
             SELECT
                 line.id,
@@ -105,7 +104,6 @@ class InvoiceReportSama(models.Model):
 
     @api.model
     def _from(self):
-        print('domain', domain, "\n")
         return '''
             FROM account_move_line line
                 LEFT JOIN product_product product ON product.id = line.product_id
@@ -118,7 +116,6 @@ class InvoiceReportSama(models.Model):
 
     @api.model
     def _where(self):
-        print('domain', domain, "\n")
         return '''
             WHERE move.move_type IN ('out_invoice','out_refund')
                 AND move.state NOT IN ('draft', 'cancel')
