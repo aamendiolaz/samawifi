@@ -220,7 +220,7 @@ class InvoiceReportSama(models.Model):
                     __domain = domain
                 _logger.info('::::::::::::::DOMAIN RESULT::::::::::::::')
                 _logger.info('::::::::::::::DOMAIN RESULT::::::::::::::')
-                _logger.info(json.dumps(domain, indent='\t'))
+                _logger.info(json.dumps(__domain, indent='\t'))
                 _logger.info('::::::::::::::DOMAIN RESULT::::::::::::::')
                 _logger.info('::::::::::::::DOMAIN RESULT::::::::::::::')
                 target_lines = self.env['sales.target.lines'].search(__domain)
