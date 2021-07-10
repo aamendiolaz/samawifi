@@ -516,7 +516,8 @@ class SalesTargetLines(models.Model):
                     ('create_date', '>=', stdt),
                     ('create_date', '<=', endt),
                     ('state', '=', 'posted'),
-                    ('move_type', '=', 'out_invoice')
+                    ('move_type', '=', 'out_invoice'),
+                    ('move_type', '=', 'in_invoice')
                 ])
 
                 rec.no_of_sales = len(BillingOrders)
