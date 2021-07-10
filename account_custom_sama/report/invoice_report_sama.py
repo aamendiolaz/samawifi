@@ -3,6 +3,8 @@ import calendar
 
 from odoo import models, fields, api
 from odoo.osv import expression
+import logging
+_logger = logging.getLogger(__name__)
 
 months = {
         'ENERO':1,
@@ -201,7 +203,7 @@ class InvoiceReportSama(models.Model):
     def read_group(self, domain, fields, groupby, offset=0, limit=None, orderby=False, lazy=True):
         result = super(InvoiceReportSama, self).read_group(domain, fields, groupby, offset, limit, orderby, lazy)
         print('domain', domain, "\n")
-
+        _logger.info('DOMAIN', domain)
         for line in result:
             print('line', line)
             line.setdefault('price_subtotal_usd', 0.0)
