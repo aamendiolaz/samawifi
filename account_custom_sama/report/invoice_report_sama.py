@@ -82,7 +82,6 @@ class InvoiceReportSama(models.Model):
     def _table_query(self):
         return '%s %s %s' % (self._select(), self._from(), self._where())
 
-    filerable_fields = ['product_sama_brand_id','product_sama_category_id','product_sama_subcategory_id','user_id']
     groupable_fields = ['user_id']
     @api.model
     def fields_get(self, allfields=None, attributes=None):
@@ -90,11 +89,9 @@ class InvoiceReportSama(models.Model):
         not_groupable_fields = set(self._fields.keys()) - set(self.groupable_fields)
         for field in not_groupable_fields:
             if field in res:
-                res[field]['sortable'] = False ## Remove FilterBy         
-        not_filerable_groupable_fields = set(self._fields.keys()) - set(self.filerable_fields)
-        for field in not_filerable_groupable_fields:
-            if field in res:
-                res[field]['selectable'] = False ## Remove FilterBy         
+                res[field]['selectable'] = False ## Remove FilterBy       
+                res[field]['sortable'] = False ## Remove FilterBy                
+         
         return res
         
     @api.model
