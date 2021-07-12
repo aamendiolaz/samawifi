@@ -91,16 +91,10 @@ class InvoiceReportSama(models.Model):
         for field in not_filerable_groupable_fields:
             if field in res:
                 res[field]['selectable'] = False ## Remove FilterBy
-                res[field]['sortable'] = False ## Remove GroupBy            
+                res[field]['sortable'] = False ## Remove GroupBy    
+                res[field]['searchable'] = False ## Remove GroupBy                    
         return res
 
-    @api.model
-    def fields_get(self, fields=None):
-        fields_to_hide = ['move_id']
-        res = super(InvoiceReportSama, self).fields_get()
-        for field in fields_to_hide:
-            res[field]['selectable'] = False
-        return res
         
     @api.model
     def _select(self):
