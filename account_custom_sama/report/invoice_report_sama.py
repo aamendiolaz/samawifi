@@ -83,6 +83,15 @@ class InvoiceReportSama(models.Model):
         return '%s %s %s' % (self._select(), self._from(), self._where())
 
     @api.model
+    def fields_get(self, fields=None):
+        fields_to_hide = ['move_id']
+        res = super(InvoiceReportSama, self).fields_get()
+        for field in fields_to_hide:
+            res[field]['selectable'] = False
+        return res
+
+
+    @api.model
     def _select(self):
         return '''
             SELECT
@@ -117,13 +126,6 @@ class InvoiceReportSama(models.Model):
             currency_table=self.env['res.currency']._get_query_currency_table({'multi_company': True, 'date': {'date_to': fields.Date.today()}}),
         )
 
-    @api.model
-    def fields_get(self, fields=None):
-    return fields_to_hide = ['move_id']
-        res = super(InvoiceReportSama, self).fields_get()
-        for field in fields_to_hide:
-            res[field]['selectable'] = False
-        return res
 
     @api.model
     def _where(self):
