@@ -82,14 +82,25 @@ class InvoiceReportSama(models.Model):
     def _table_query(self):
         return '%s %s %s' % (self._select(), self._from(), self._where())
 
-    @api.model
+"""     @api.model
     def fields_get(self, fields=None):
         fields_to_hide = ['move_id']
         res = super(InvoiceReportSama, self).fields_get()
         for field in fields_to_hide:
             res[field]['selectable'] = False
-        return res
+        return res """
 
+filerable_groupable_fields = ['product_sama_brand_id','product_sama_category_id','product_sama_subcategory_id','user_id']
+
+    @api.model
+    def fields_get(self, allfields=None, attributes=None):
+        res = super(InvoiceReportSama, self).fields_get(allfields, attributes=attributes) 
+        not_filerable_groupable_fields = set(self._fields.keys()) - set(self.filerable_groupable_fields)
+        for field in not_filerable_groupable_fields:
+            if field in res:
+                res[field]['selectable'] = False ## Remove FilterBy
+                res[field]['sortable'] = False ## Remove GroupBy            
+        return res
 
     @api.model
     def _select(self):
