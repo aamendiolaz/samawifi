@@ -95,6 +95,14 @@ class InvoiceReportSama(models.Model):
         return res
 
     @api.model
+    def fields_get(self, fields=None):
+        fields_to_hide = ['move_id']
+        res = super(InvoiceReportSama, self).fields_get()
+        for field in fields_to_hide:
+            res[field]['selectable'] = False
+        return res
+        
+    @api.model
     def _select(self):
         return '''
             SELECT
