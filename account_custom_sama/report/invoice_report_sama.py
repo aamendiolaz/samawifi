@@ -118,6 +118,14 @@ class InvoiceReportSama(models.Model):
         )
 
     @api.model
+    def fields_get(self, fields=None):
+    fields_to_hide = ['field_name']
+        res = super(InvoiceReportSama, self).fields_get()
+        for field in fields_to_hide:
+            res[field]['selectable'] = False
+        return res
+
+    @api.model
     def _where(self):
         return '''
             WHERE move.move_type IN ('out_invoice','out_refund')
