@@ -91,7 +91,8 @@ class InvoiceReportSama(models.Model):
             if field in res:
                 res[field]['selectable'] = False ## Remove FilterBy       
                 res[field]['sortable'] = False ## Remove FilterBy                
-         
+                res[field]['searchable'] = False ## Remove FilterBy                
+
         return res
         
     @api.model
