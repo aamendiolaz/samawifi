@@ -122,7 +122,7 @@ class SaleOrder(models.Model):
         self.ensure_one()
         self = self.sudo()
         today = date.today()
-        filters = [('invoice_date_due', '<', today), ('payment_state', '!=', 'paid'),
+        filters = [('invoice_date_due', '<', today), ('payment_state', 'in', ['in_payment','partial','not_paid']),
                    ('state', '=', 'posted'),('partner_id', '=', self.partner_id.id)]
         over_due_invoices = self.env['account.move'].search(filters)
         if self.partner_id.commercial_partner_id.credit_limit == 0:
