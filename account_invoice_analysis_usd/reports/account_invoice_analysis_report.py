@@ -169,15 +169,19 @@ class AccountInvoiceAnalysisReport(models.Model):
         for record in res:
 
             if "real_margin" in record:
-                if record['price_subtotal']:
-                    record['real_margin_percent'] = (record['real_margin'] / record['price_subtotal']) * 100
+                # if record['price_subtotal']:
+                if record.get('price_subtotal_usd', False):
+                    # record['real_margin_percent'] = (record['real_margin'] / record['price_subtotal']) * 100
+                    record['real_margin_percent'] = (record['real_margin'] / record['price_subtotal_usd']) * 100
                 else:
                     record['real_margin_percent'] = record['real_margin'] or 1.0 / 1.0
         if not groupby:
             for record in res:
                 if "real_margin" in record:
-                    if record['price_subtotal']:
-                        record['real_margin_percent'] = (record['real_margin'] / record['price_subtotal']) * 100
+                    # if record['price_subtotal']:
+                    if record.get('price_subtotal_usd', False):
+                        # record['real_margin_percent'] = (record['real_margin'] / record['price_subtotal']) * 100
+                        record['real_margin_percent'] = (record['real_margin'] / record['price_subtotal_usd']) * 100
                     else:
                         record['real_margin_percent'] = record['real_margin'] or 1.0 / 1.0
         return res
