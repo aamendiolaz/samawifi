@@ -128,10 +128,12 @@ class AccountInvoiceAnalysisReport(models.Model):
                    * (NULLIF(COALESCE(uom_line.factor, 1), 0.0) / NULLIF(COALESCE(uom_template.factor, 1), 0.0)),
                    0.0) * currency_table.rate                               AS price_average,
                 COALESCE(partner.country_id, commercial_partner.country_id) AS country_id,
-                (line.real_margin) AS real_margin, 
-                (line.real_margin_percent) AS real_margin_percent,
-                ((line.real_cost * line.quantity)) AS real_cost
+                (CASE WHEN line.company_currency_id <> 2 THEN line.real_margin * move.currency_rate_usd ELSE line.real_margin END) AS real_margin, 
+                (CASE WHEN line.company_currency_id <> 2 THEN line.real_margin_percent * move.currency_rate_usd ELSE line.real_margin_percent END) AS real_margin_percent,
+                (line.real_cost * line.quantity) AS real_cost
         '''
+
+    # ((CASE WHEN line.company_currency_id <> 2 THEN line.real_cost * move.currency_rate_usd ELSE line.real_cost END) * line.quantity) AS real_cost
 
     @api.model
     def _from(self):
