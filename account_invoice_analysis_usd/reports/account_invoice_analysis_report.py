@@ -128,8 +128,22 @@ class AccountInvoiceAnalysisReport(models.Model):
                    * (NULLIF(COALESCE(uom_line.factor, 1), 0.0) / NULLIF(COALESCE(uom_template.factor, 1), 0.0)),
                    0.0) * currency_table.rate                               AS price_average,
                 COALESCE(partner.country_id, commercial_partner.country_id) AS country_id,
-                (CASE WHEN line.company_currency_id <> 2 THEN line.real_margin * move.currency_rate_usd ELSE line.real_margin END) AS real_margin, 
-                (CASE WHEN line.company_currency_id <> 2 THEN line.real_margin_percent * move.currency_rate_usd ELSE line.real_margin_percent END) AS real_margin_percent,
+                (CASE WHEN line.company_currency_id <> 2 THEN 
+                 (CASE WHEN move.amount_untaxed_signed < 0 THEN -line.price_subtotal * move.currency_rate_usd ELSE line.price_subtotal * move.currency_rate_usd END) - (line.real_cost * line.quantity)
+                 ELSE line.real_margin END) AS real_margin, 
+                
+                
+                (CASE WHEN line.company_currency_id <> 2 THEN 
+( 
+(CASE WHEN line.company_currency_id <> 2 THEN 
+    (CASE WHEN move.amount_untaxed_signed < 0 THEN -line.price_subtotal * move.currency_rate_usd ELSE line.price_subtotal * move.currency_rate_usd END) - 
+	(line.real_cost * line.quantity)
+                 ELSE line.real_margin END) 
+/ 
+COALESCE(NULLIF((CASE WHEN move.amount_untaxed_signed < 0 THEN -line.price_subtotal * move.currency_rate_usd ELSE line.price_subtotal * move.currency_rate_usd END),0),1)
+) * 100 
+ELSE line.real_margin_percent END) AS real_margin_percent,
+
                 (line.real_cost * line.quantity) AS real_cost
         '''
 
